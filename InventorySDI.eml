@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component jdk="1.8" jdk_type="JavaSDK">
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$">
+		<excludeFolder url="file://$MODULE_DIR$/.idea"/>
+		<excludeFolder url="file://$MODULE_DIR$/.settings"/>
+		<excludeFolder url="file://$MODULE_DIR$/logs"/>
+	</contentEntry>
+	<lib name="log4j-api-2.7.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/log4j-api-2.7.jar!/"/>
+	</lib>
+	<lib name="log4j-core-2.7-javadoc.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/log4j-core-2.7-javadoc.jar!/"/>
+	</lib>
+	<lib name="log4j-core-2.7.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/log4j-core-2.7.jar!/"/>
+	</lib>
+	<lib name="log4j-api-2.7-javadoc.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/log4j-api-2.7-javadoc.jar!/"/>
+	</lib>
+	<levels>
+		<level name="mysql-connector-java-5.1.40-bin" value="project"/>
+	</levels>
+</component>
