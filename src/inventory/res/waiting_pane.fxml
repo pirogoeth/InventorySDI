@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane fx:id="waitingPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.layout.*?>
+<AnchorPane fx:id="waitingPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+            minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.111"
+            xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <Label fx:id="appWaitingLabel" alignment="CENTER" layoutX="101.0" layoutY="262.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="400.0" text="Waiting..." textAlignment="CENTER" />
-        <ProgressIndicator fx:id="appWaitingSpinner" layoutX="256.0" layoutY="149.0" prefHeight="80.0" prefWidth="89.0" />
+        <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+                   minWidth="-Infinity" prefHeight="80.0" prefWidth="89.0" AnchorPane.bottomAnchor="0.0"
+                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <ProgressIndicator fx:id="appWaitingSpinner" maxHeight="1.7976931348623157E308"
+                                   maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity"
+                                   StackPane.alignment="TOP_CENTER"/>
+                <Label fx:id="appWaitingLabel" alignment="CENTER" maxHeight="1.7976931348623157E308"
+                       maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="Waiting..."
+                       textAlignment="CENTER" StackPane.alignment="CENTER">
+                    <StackPane.margin>
+                        <Insets top="20.0"/>
+                    </StackPane.margin>
+                </Label>
+            </children>
+        </StackPane>
     </children>
 </AnchorPane>

@@ -16,6 +16,8 @@ public enum ViewType {
     ROOT(Res.root_view, Root.class),
     AUTHOR_LIST(Res.author_list, AuthorList.class),
     AUTHOR_DETAIL(Res.author_detailed, AuthorDetail.class),
+    BOOK_LIST(Res.book_list, BookList.class),
+    BOOK_DETAIL(Res.book_detailed, BookDetail.class),
     WAITING_PANE(Res.waiting_pane, WaitingPane.class),
     AUDIT_VIEW(Res.audit_log, AuditView.class);
 
@@ -68,5 +70,15 @@ public enum ViewType {
 
     void setController(Object o) {
         ctrlInst.put(this.name(), o);
+    }
+
+    public boolean isContentModified() {
+        Object ctrl = this.getController();
+        if ( !( ctrl instanceof ContentModifiable ) ) {
+            return false;
+        }
+
+        ContentModifiable cm = (ContentModifiable) ctrl;
+        return cm.isContentModified();
     }
 }

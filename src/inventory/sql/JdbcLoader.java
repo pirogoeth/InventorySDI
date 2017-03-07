@@ -109,6 +109,9 @@ public class JdbcLoader {
             LOG.debug("Ensuring tables exist for IQueryBase: " + inst.getClass().getSimpleName());
             inst.createTable();
         }
+
+        // All further database actions will be transactions.
+        dsConn.setAutoCommit(false);
     }
 
     public void close() {

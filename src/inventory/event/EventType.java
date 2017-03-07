@@ -14,6 +14,13 @@ import java.util.Map;
  *
  */
 public enum EventType {
+    /**
+     * EventType.MODEL_RELOAD
+     * <p>
+     * Triggered when a model should reload from the database.
+     */
+    MODEL_RELOAD,
+
 	/**
 	 * EventType.VIEW_CLOSE
 	 * 
@@ -69,14 +76,15 @@ public enum EventType {
 	
 	public void dispatch(Event evt) {
 		LOG.debug("Dispatching event " + this.name());
-		for (EventReceiver recv : store.get(this)) {
-			recv.receiveEvent(evt);
-			if ( evt.isCancelled() ) {
-				LOG.debug("Event was cancelled - " + this.toString());
-				break;
-			}
-		}
-	}
+        for ( EventReceiver recv : store.get(this) ) {
+            LOG.debug("Sending event to receiver: " + recv.toString());
+            recv.receiveEvent(evt);
+            if ( evt.isCancelled() ) {
+                LOG.debug("Event was cancelled - " + this.toString());
+                break;
+            }
+        }
+    }
 	
 	static {
 		for (EventType evType : values()) {

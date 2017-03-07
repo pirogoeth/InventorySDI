@@ -4,7 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+            minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <GridPane layoutX="189.0" layoutY="155.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -51,22 +52,25 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
             </Button>
-            <TextField fx:id="firstNameField" onAction="#onInfoChange" GridPane.columnIndex="1">
+             <TextField fx:id="firstNameField" onAction="#onInfoChange" onKeyTyped="#onInfoChange"
+                        GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="lastNameField" onAction="#onInfoChange" GridPane.columnIndex="1" GridPane.rowIndex="1">
+             <TextField fx:id="lastNameField" onAction="#onInfoChange" onKeyTyped="#onInfoChange"
+                        GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="webSiteField" onAction="#onInfoChange" GridPane.columnIndex="1" GridPane.rowIndex="4">
+             <TextField fx:id="webSiteField" onKeyTyped="#onInfoChange" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                </GridPane.margin>
             </TextField>
-            <DatePicker fx:id="birthDateField" maxWidth="1.7976931348623157E308" onAction="#onInfoChange" prefHeight="25.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+             <DatePicker fx:id="birthDateField" maxWidth="1.7976931348623157E308" onAction="#onInfoChange"
+                         onKeyTyped="#onInfoChange" prefHeight="25.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                </GridPane.margin>

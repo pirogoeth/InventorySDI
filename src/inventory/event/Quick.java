@@ -20,4 +20,13 @@ public class Quick {
         }
     }
 
+    public static void dispatchModelReload(Object src) {
+        try {
+            LOG.debug("Dispatching MODEL_RELOAD for data update");
+            new Event(EventType.MODEL_RELOAD, src, SourceType.USER).dispatch();
+        } catch ( Exception ex ) {
+            LOG.warn("Error while dispatching MODEL_RELOAD");
+            LOG.catching(ex);
+        }
+    }
 }

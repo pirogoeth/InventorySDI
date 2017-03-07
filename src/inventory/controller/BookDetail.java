@@ -4,6 +4,8 @@ import inventory.event.Event;
 import inventory.event.EventReceiver;
 import inventory.event.EventType;
 import inventory.models.Author;
+import inventory.models.Book;
+import inventory.sql.AuthorQuery;
 import inventory.view.ContentModifiable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,39 +21,46 @@ import java.util.ResourceBundle;
 
 import static inventory.event.Quick.dispatchViewRefresh;
 
-public class AuthorDetail extends EventReceiver implements Initializable, ContentModifiable {
+public class BookDetail extends EventReceiver implements Initializable, ContentModifiable {
 
-    @SuppressWarnings("unused")
-    private static Logger LOG = LogManager.getLogger(AuthorDetail.class);
-    private static AuthorDetail instance = null;
+    @SuppressWarnings( "unused" )
+    private static Logger LOG = LogManager.getLogger(BookDetail.class);
+    private static BookDetail instance = null;
 
     /**
      * Returns the single instance for this controller.
      *
-     * @return AuthorDetail
+     * @return BookDetail
      */
-    public static AuthorDetail getInstance() {
+    public static BookDetail getInstance() {
         return instance;
     }
 
-    private Author currentAuthor;
+    private Book currentBook;
 
-    @FXML private TextField firstNameField;
-    @FXML private TextField lastNameField;
-    @FXML private DatePicker birthDateField;
-    @FXML private ChoiceBox<Author.Gender> genderField;
-    @FXML private TextField webSiteField;
+    @FXML
+    private TextField titleField;
+    @FXML
+    private TextField publisherField;
+    @FXML
+    private DatePicker pubDateField;
+    @FXML
+    private ChoiceBox<Author> authorField;
+    @FXML
+    private TextArea summaryField;
 
-    @FXML private Button detailSave;
-    @FXML private Button detailDelete;
+    @FXML
+    private Button detailSave;
+    @FXML
+    private Button detailDelete;
 
     private boolean deleteDisabled = false;
     private boolean modified = false;
 
-    public AuthorDetail(Author author) {
+    public BookDetail(Book book) {
         instance = this;
 
-        this.currentAuthor = author;
+        this.currentBook = book;
     }
 
     public boolean isContentModified() {
@@ -63,16 +72,17 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
         this.modified = true;
     }
 
-    @FXML private void handleSaveDetails(ActionEvent evt) {
+    @FXML
+    private void handleSaveDetails(ActionEvent evt) {
         try {
-            this.currentAuthor.save();
+            this.currentBook.save();
             this.modified = false;
-        } catch (IllegalArgumentException ex) {
+        } catch ( IllegalArgumentException ex ) {
             LOG.catching(ex);
             Alert a = new Alert(
-                    AlertType.ERROR,
-                    "Error while saving: " + ex.getMessage(),
-                    ButtonType.OK
+                AlertType.ERROR,
+                "Error while saving: " + ex.getMessage(),
+                ButtonType.OK
             );
             a.showAndWait();
             return;
@@ -87,20 +97,21 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
         }
     }
 
-    @FXML private void handleDeleteDetails(ActionEvent evt) {
+    @FXML
+    private void handleDeleteDetails(ActionEvent evt) {
         Alert a = new Alert(
-                AlertType.CONFIRMATION,
-                "Are you sure you want to delete this author?",
-                ButtonType.YES,
-                ButtonType.NO
+            AlertType.CONFIRMATION,
+            "Are you sure you want to delete this book?",
+            ButtonType.YES,
+            ButtonType.NO
         );
         a.showAndWait()
-                .filter(response -> response == ButtonType.YES)
-                .ifPresent(response -> this.performDelete());
+            .filter(response -> response == ButtonType.YES)
+            .ifPresent(response -> this.performDelete());
     }
 
     private void performDelete() {
-        this.currentAuthor.delete();
+        this.currentBook.delete();
         dispatchViewRefresh(this);
 
         // Disable deletion of a no long in-database record...
@@ -110,18 +121,19 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        LOG.info("initializing AuthorDetail controller");
+        LOG.info("initializing BookDetail controller");
 
         this.registerToReceive(EventType.MODEL_RELOAD);
 
-        this.firstNameField.textProperty().bindBidirectional(this.currentAuthor.firstNameProperty());
-        this.lastNameField.textProperty().bindBidirectional(this.currentAuthor.lastNameProperty());
-        this.birthDateField.valueProperty().bindBidirectional(this.currentAuthor.birthDateProperty());
-        this.genderField.valueProperty().bindBidirectional(this.currentAuthor.genderProperty());
-        this.webSiteField.textProperty().bindBidirectional(this.currentAuthor.webSiteProperty());
+        this.titleField.textProperty().bindBidirectional(this.currentBook.titleProperty());
+        this.publisherField.textProperty().bindBidirectional(this.currentBook.publisherProperty());
+        this.pubDateField.valueProperty().bindBidirectional(this.currentBook.publishDateProperty());
+        this.summaryField.textProperty().bindBidirectional(this.currentBook.summaryProperty());
+        this.authorField.valueProperty().bindBidirectional(this.currentBook.authorObjectProperty());
 
         // Put the gender data in the picker
-        this.genderField.setItems(Author.Gender.choicesAsObservables());
+        this.authorField.setItems(AuthorQuery.getInstance().findAll());
+        this.authorField.getSelectionModel().select(this.currentBook.getAuthor());
 
         // Update the deletion button state
         this.updateDeleteState();
@@ -132,7 +144,7 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
         // Receive waiting events
         switch ( ev.getEventType() ) {
             case MODEL_RELOAD:
-                this.currentAuthor.reload();
+                this.currentBook.reload();
             default:
                 break;
         }

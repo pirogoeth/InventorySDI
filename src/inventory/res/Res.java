@@ -26,6 +26,16 @@ public final class Res {
 	 */
 	public static final URL author_detailed = Res.class.getResource("author_detailed.fxml");
 
+	/**
+	 * FXML view for the book list pane. Loads into the root view.
+	 */
+	public static final URL book_list = Res.class.getResource("book_list.fxml");
+
+	/**
+	 * FXML view for the book detailed view pane. Loads alongside the book list in the root view.
+	 */
+	public static final URL book_detailed = Res.class.getResource("book_detailed.fxml");
+
     /**
      * Waiting pane to dump into the root class.
      */

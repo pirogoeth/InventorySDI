@@ -15,10 +15,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-public class Book implements Auditable {
+public class Book implements Auditable, OptimisticLocked, Reloadable {
 
     private static final Logger LOG = LogManager.getLogger(Author.class);
-    private static final String REC_TYPE = "B";
+    public static final String REC_TYPE = "B";
+
+    // Audit event type constants
+    private static final String CREATE_EVENT = "Created book";
+    private static final String UPDATE_EVENT = "Updated book";
+    private static final String DELETE_EVENT = "Deleted book";
 
     public static class Validate {
         static boolean nonNull(Object o) {
@@ -54,6 +59,14 @@ public class Book implements Auditable {
 
             return false;
         }
+
+        static boolean authorId(int i) {
+            if ( i > 0 ) {
+                return true;
+            }
+
+            return false;
+        }
     }
 
     private final SimpleIntegerProperty id = new SimpleIntegerProperty();
@@ -63,6 +76,8 @@ public class Book implements Auditable {
     private final SimpleStringProperty summary = new SimpleStringProperty();
     private final SimpleIntegerProperty authorId = new SimpleIntegerProperty();
     private final SimpleObjectProperty<LocalDateTime> lastModified = new SimpleObjectProperty<>();
+
+    private final SimpleObjectProperty<Author> author = new SimpleObjectProperty<>();
 
     public Book() {
         this.setId(-1);
@@ -81,6 +96,8 @@ public class Book implements Auditable {
         this.setSummary(summary);
         this.setAuthorId(authorId);
         this.setLastModifiedDate(lastModified);
+
+        this.loadAuthor();
     }
 
     public Book(int id, String title, String publisher, Date publishDate, String summary, int authorId, LocalDateTime lastModified) {
@@ -106,13 +123,12 @@ public class Book implements Auditable {
 
     public String auditString() {
         return String.format(
-                "[%d|%s|%s|%s|%d|%s]",
+            "[%d|%s|%s|%s|%d]",
                 this.getId(),
                 this.getTitle(),
                 this.getPublisher(),
                 this.getPublishDate().toString(),
-                this.getAuthorId(),
-                this.getLastModifiedDate().toString()
+            this.getAuthorId()
         );
     }
 
@@ -125,10 +141,73 @@ public class Book implements Auditable {
     }
 
     /*
+     * OPTIMISTICLOCKED IMPLEMENTATION
+     */
+    public boolean canModify() {
+        Book b = BookQuery.getInstance().findById(this.getId());
+
+        return b.getLastModifiedDate().equals(this.getLastModifiedDate());
+    }
+
+    /*
+     * RELOADABLE IMPLEMENTATION
+     */
+
+    /**
+     * Reloads the model data from the database.
+     */
+    public void reload() {
+        Book b = BookQuery.getInstance().findById(this.getId());
+
+        this.setTitle(b.getTitle());
+        this.setPublisher(b.getPublisher());
+        this.setPublishDate(b.getPublishDate());
+        this.setAuthorId(b.getAuthorId());
+        this.setLastModifiedDate(b.getLastModifiedDate());
+
+        this.loadAuthor();
+    }
+
+    /*
+     * POPULATION
+     */
+    private void loadAuthor() {
+        if ( this.getAuthorId() == -1 ) {
+            return;
+        }
+
+        Author a = AuthorQuery.getInstance().findById(this.getAuthorId());
+        if ( a == null ) {
+            LOG.error("Could not find author with id: " + this.getAuthorId());
+            return;
+        }
+
+        this.author.set(a);
+    }
+
+    private void saveAuthor() {
+        if ( this.getAuthor() == null ) {
+            return;
+        }
+
+        // `authorObjectProperty` is manipulated by the controller -
+        // the object's id should sync over the integer id.
+        if ( this.getAuthor().getId() != this.getAuthorId() ) {
+            this.setAuthorId(this.getAuthor().getId());
+        }
+    }
+
+    /*
      * MODEL MAGIC!
      */
 
     public void save() throws IllegalArgumentException {
+        this.saveAuthor();
+
+        if ( this.canModify() ) {
+            throw new IllegalArgumentException("can not modify Book - lock check failed!");
+        }
+
         // Do field validation
         if ( !Validate.descriptor(this.getTitle()) ) {
             throw new IllegalArgumentException("title must satisfy 0 < length <= 100");
@@ -138,28 +217,36 @@ public class Book implements Auditable {
             throw new IllegalArgumentException("publisher must satisfy 0 < length <= 100");
         }
 
+        if ( !Validate.summary(this.getSummary()) ) {
+            throw new IllegalArgumentException("summary must satisfy 0 < length < 65k");
+        }
+
+        if ( !Validate.authorId(this.getAuthorId()) ) {
+            throw new IllegalArgumentException("authorId must be valid (0 < authorId)");
+        }
+
         // If id == -1, this is a create. Otherwise, it's an update.
-        if ( this.id.get() == -1 ) {
-            LOG.debug(String.format("Executing creation query for Author %s", this));
+        if ( this.getId() == -1 ) {
+            LOG.debug(String.format("Executing creation query for Book '%s'", this));
             BookQuery.getInstance().create(this);
-            new Audit(REC_TYPE, this.getId(), "Created author " + this.auditString()).save();
+            new Audit(this, CREATE_EVENT).save();
         } else {
             if ( !Validate.id(this.id.get()) ) {
                 throw new IllegalArgumentException("id must be greater than 0");
             }
 
-            LOG.debug(String.format("Executing update query for Author %s", this));
+            LOG.debug(String.format("Executing update query for Book '%s'", this));
             BookQuery.getInstance().update(this);
-            new Audit(REC_TYPE, this.getId(), "Updated author " + this.auditString()).save();
+            new Audit(this, UPDATE_EVENT).save();
         }
     }
 
     public boolean delete() {
         if ( !BookQuery.getInstance().delete(this) ) {
-            LOG.warn("Could not delete row for Author " + this);
+            LOG.warn(String.format("Could not delete row for '%s'", this));
             return false;
         } else {
-            new Audit(REC_TYPE, this.getId(), "Deleted author " + this.auditString()).save();
+            new Audit(this, DELETE_EVENT).save();
             return true;
         }
     }
@@ -188,8 +275,8 @@ public class Book implements Auditable {
         return this.summary;
     }
 
-    public Property<Number> authorIdProperty() {
-        return this.authorId;
+    public Property<Author> authorObjectProperty() {
+        return this.author;
     }
 
     public Property<LocalDateTime> lastModifiedProperty() {
@@ -309,7 +396,6 @@ public class Book implements Auditable {
      * MODEL LINK
      */
     public Author getAuthor() {
-        // Tries to get the author for this book.
-        return AuthorQuery.getInstance().findById(this.getAuthorId());
+        return this.author.get();
     }
 }

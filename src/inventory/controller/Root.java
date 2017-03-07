@@ -3,11 +3,14 @@ package inventory.controller;
 import inventory.event.Event;
 import inventory.event.EventReceiver;
 import inventory.event.EventType;
+import inventory.event.Quick;
 import inventory.models.Author;
+import inventory.models.Book;
 import inventory.util.Reflect;
 import inventory.view.ViewManager;
 import inventory.view.ViewType;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,13 +36,20 @@ public class Root extends EventReceiver implements Initializable {
 	public static Root getInstance() {
 		return instance;
 	}
-	
-	@FXML private MenuBar rootMenu;
-	@FXML private MenuItem appClose;
+
+    private final SimpleBooleanProperty windowCloseDisabled = new SimpleBooleanProperty();
+    @FXML
+    private MenuBar rootMenu;
+    @FXML private MenuItem appClose;
 	@FXML private MenuItem windowClose;
 	@FXML private MenuItem authorsNew;
 	@FXML private MenuItem authorsList;
-	@FXML private MenuItem auditLog;
+    @FXML
+    private MenuItem booksNew;
+    @FXML
+    private MenuItem booksList;
+    @FXML
+    private MenuItem auditLog;
 
 	private ViewManager viewMgr;
 
@@ -52,19 +62,18 @@ public class Root extends EventReceiver implements Initializable {
 		instance = this;
 	}
 
-	private boolean ensureAuthorDetailSaved() {
-	    LOG.info("ensuring author details saved");
-	    Alert a = new Alert(
-	            AlertType.CONFIRMATION,
+    private boolean ensureDetailsSaved() {
+        Alert a = new Alert(
+            AlertType.CONFIRMATION,
                 "Are you sure you want to navigate away without saving?",
                 ButtonType.NO,
                 ButtonType.YES
         );
 	    Optional<ButtonType> result = a.showAndWait();
-	    if ( result.isPresent() && result.get() == ButtonType.YES ) {
-	        return false;
+        if ( result.isPresent() && result.get() == ButtonType.YES ) {
+            return true;
         } else {
-	        return true;
+            return false;
         }
     }
 
@@ -76,12 +85,22 @@ public class Root extends EventReceiver implements Initializable {
 
         // Load the authors list.
         try {
-            if (this.viewMgr.viewIsActive(ViewType.AUTHOR_DETAIL) && this.ensureAuthorDetailSaved()) {
-                return;
+            if ( this.viewMgr.viewIsActive(ViewType.AUTHOR_DETAIL) && ViewType.AUTHOR_DETAIL.isContentModified() ) {
+                if ( !this.ensureDetailsSaved() ) {
+                    Quick.dispatchModelReload(this);
+                    return;
+                }
+            } else if ( this.viewMgr.viewIsActive(ViewType.BOOK_DETAIL) && ViewType.BOOK_DETAIL.isContentModified() ) {
+                if ( !this.ensureDetailsSaved() ) {
+                    Quick.dispatchModelReload(this);
+                    return;
+                }
             }
         } catch (NullPointerException ex) {
             // Ignore.
         }
+
+        this.windowCloseDisabled.set(false);
 
 		if ( source == this.appClose ) {
             // Application needs to close
@@ -97,6 +116,7 @@ public class Root extends EventReceiver implements Initializable {
 
                 this.viewMgr.changeView(null, listView);
             }
+
 		} else if ( source == this.authorsList ) {
             // Load the authors list.
             LOG.info("Loading authors list");
@@ -105,8 +125,9 @@ public class Root extends EventReceiver implements Initializable {
 
                 this.viewMgr.changeView(null, listView);
             }
+
         } else if ( source == this.authorsNew )	{
-		    // Creating a new author - open the details pane. BLANK!
+            // Creating a new author - open the details pane. BLANK!
             LOG.info("Opening details pane to create new author");
             Author newAuthor = new Author();
 
@@ -124,18 +145,48 @@ public class Root extends EventReceiver implements Initializable {
                 LOG.fatal("Could not initialize Author detail view");
             }
 
-		} else if ( source == this.windowClose ) {
-			// Clear the current overlay in the root pane.
-			LOG.info("Closing current center child pane");
+        } else if ( source == this.booksList ) {
+            // Load the authors list.
+            LOG.info("Loading books list");
+            if ( this.viewMgr.initView(ViewType.BOOK_LIST) ) {
+                Parent listView = ViewType.BOOK_LIST.getViewInst();
 
-			// Use the ViewManager to restore the previous pane
+                this.viewMgr.changeView(null, listView);
+            }
+
+        } else if ( source == this.booksNew ) {
+            // Creating a new author - open the details pane. BLANK!
+            LOG.info("Opening details pane to create new book");
+            Book newBook = new Book();
+
+            if ( this.viewMgr.initView(ViewType.BOOK_DETAIL, newBook) ) {
+                Parent detailView = ViewType.BOOK_DETAIL.getViewInst();
+
+                // And here we go shooting into the dark
+                Object ctrl = ViewType.BOOK_DETAIL.getController();
+                Reflect.unsafeOneShot(ctrl, "setDeleteDisabled", true);
+                Reflect.unsafeOneShot(ctrl, "setModified", true);
+
+                this.viewMgr.changeView(null, detailView);
+            } else {
+                // Uhhhh
+                LOG.fatal("Could not initialize Book detail view");
+            }
+
+        } else if ( source == this.windowClose ) {
+            // Clear the current overlay in the root pane.
+            LOG.info("Closing current center child pane");
+
+            // Use the ViewManager to restore the previous pane
             try {
                 this.viewMgr.restorePreviousView();
+                this.windowCloseDisabled.set(false);
             } catch (Exception ex) {
                 this.viewMgr.clearAll();
+                this.windowCloseDisabled.set(true);
             }
-		}
-	}
+        }
+    }
 
 	@Override
     public void receiveEvent(Event ev) {
@@ -177,6 +228,10 @@ public class Root extends EventReceiver implements Initializable {
 		LOG.debug("Initialize root controller");
 
 		this.registerToReceive(EventType.START_WAIT, EventType.STOP_WAIT);
-	}
-	
+
+        // Bind the `Close` disable property.
+        this.windowCloseDisabled.set(true);
+        this.windowClose.disableProperty().bindBidirectional(this.windowCloseDisabled);
+    }
+
 }

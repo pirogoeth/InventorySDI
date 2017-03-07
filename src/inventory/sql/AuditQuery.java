@@ -84,10 +84,19 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
             int creationId = Sql.getCreationId(stmt);
             model.setId(creationId);
 
+            conn.commit();
+
             return true;
         } catch (SQLException ex) {
             // Could not create the prepared statement?
             LOG.warn("Could not insert into `audit_log` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -114,11 +123,19 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
 
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
+                conn.commit();
                 return true;
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
             LOG.warn("Could not insert into `audit_log` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -135,12 +152,20 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
             if ( stmt.executeUpdate() == 1 ) {
                 // Delete success!
                 //  XXX - Unset the model id here
+                conn.commit();
                 return true;
             }
             LOG.info("delete() did not return 1 -- no rows affected?");
         } catch (SQLException ex) {
             // Could not create the prepared statement?
             LOG.warn("Could not delete from `audit_log` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 

@@ -9,7 +9,6 @@ import javafx.collections.ObservableList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 
 public class BookQuery extends Connector implements IQueryBase<Book> {
 
@@ -28,7 +27,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
     public void createTable() {
         // Create the table
-        String query = "CREATE TABLE IF NOT EXISTS `books` (" +
+        String query = "CREATE TABLE IF NOT EXISTS `book` (" +
                 "  `id` int(11) NOT NULL AUTO_INCREMENT," +
                 "  `title` varchar(100) NOT NULL," +
                 "  `publisher` varchar(100) NOT NULL," +
@@ -37,7 +36,9 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                 "  `author_id` int(11) NOT NULL," +
                 "  `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
                 "  PRIMARY KEY (`id`)," +
-                "  FOREIGN KEY (`author_id`) REFERENCES authors(`id`)" +
+            "  FOREIGN KEY (`author_id`) REFERENCES author(`id`)" +
+            "       ON DELETE CASCADE" +
+            "       ON UPDATE CASCADE" +
                 ") ";
 
         try {
@@ -45,18 +46,26 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
             stmt.executeUpdate();
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not create `books` table!");
+            LOG.warn("Could not create `book` table!");
             LOG.catching(ex);
         }
 
-        // XXX - Add trigger creation code here!
-//        String trigger = "CREATE TRIGGER";
+        String triggerQuery = "CREATE TRIGGER `updateLastModifiedTS` BEFORE UPDATE ON `book` " +
+            "   FOR EACH ROW SET NEW.last_modified = CURRENT_TIMESTAMP()";
+
+        try {
+            PreparedStatement stmt = conn.prepareStatement(triggerQuery);
+            stmt.executeUpdate();
+        } catch ( SQLException ex ) {
+            // Could not create the trigger - maybe it already exists?
+            LOG.warn("Could not create trigger `updateLastModifiedTS` - maybe it already exists?");
+        }
     }
 
     public boolean create(Book model) {
-        String query = "INSERT INTO `books` (" +
-                "`title`, `publisher`, `date_published`, `summary`, `author_id`)" +
-                "VALUES (?, ?, ?, ?, ?);";
+        String query = "INSERT INTO `book` (" +
+            "  `title`, `publisher`, `date_published`, `summary`, `author_id`)" +
+            "  VALUES (?, ?, ?, ?, ?);";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -75,10 +84,19 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
             int creationId = Sql.getCreationId(stmt);
             model.setId(creationId);
 
+            conn.commit();
+
             return true;
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not insert into `books` table!");
+            LOG.warn("Could not insert into `book` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -88,13 +106,13 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     }
 
     public boolean update(Book model) {
-        String query = "UPDATE `books` SET " +
-                "title=?," +
-                "publisher=?," +
-                "date_published=?," +
-                "summary=?," +
-                "author_id=?" +
-                "WHERE id=?";
+        String query = "UPDATE `book` SET " +
+            "  title=?," +
+            "  publisher=?," +
+            "  date_published=?," +
+            "  summary=?," +
+            "  author_id=?" +
+            "  WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -107,11 +125,19 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
+                conn.commit();
                 return true;
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not insert into `books` table!");
+            LOG.warn("Could not update `book` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -120,7 +146,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
     public boolean delete(Book model) {
         // Only need to use the model's id for the delete
-        String query = "DELETE FROM `books` WHERE id=?";
+        String query = "DELETE FROM `book` WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -129,12 +155,20 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                 // Delete success!
                 // Unset the model's id.
                 model.setId(-1);
+                conn.commit();
                 return true;
             }
             LOG.warn("delete() did not return 1 -- no rows affected?");
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not delete from `books` table!");
+            LOG.warn("Could not delete from `book` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -142,7 +176,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     }
 
     public ObservableList<Book> findAll() {
-        String query = "SELECT * FROM `books`;";
+        String query = "SELECT * FROM `book`;";
         ObservableList<Book> all = FXCollections.observableArrayList();
 
         try {
@@ -157,13 +191,13 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                         r.getDate("date_published"),
                         r.getString("summary"),
                         r.getInt("author_id"),
-                        LocalDateTime.from(r.getDate("last_modified").toInstant())
+                    r.getTimestamp("last_modified").toLocalDateTime()
                 );
                 all.add(b);
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not select on `books` table!");
+            LOG.warn("Could not select on `book` table!");
             LOG.catching(ex);
         }
 
@@ -171,7 +205,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     }
 
     public Book findById(int id) {
-        String query = "SELECT * FROM `books` WHERE id=?;";
+        String query = "SELECT * FROM `book` WHERE id=?;";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -191,14 +225,14 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                         r.getDate("date_published"),
                         r.getString("summary"),
                         r.getInt("author_id"),
-                        LocalDateTime.from(r.getTimestamp("last_modified").toInstant())
+                    r.getTimestamp("last_modified").toLocalDateTime()
                 );
 
                 return b;
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not select on `books` table!");
+            LOG.warn("Could not select on `book` table!");
             LOG.catching(ex);
         }
 

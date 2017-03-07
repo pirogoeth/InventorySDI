@@ -10,20 +10,20 @@ import javafx.collections.ObservableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Author implements Auditable {
-	
-	private static final Logger LOG = LogManager.getLogger(Author.class);
-	private static final String REC_TYPE = "A";
+public class Author implements Auditable, OptimisticLocked, Reloadable {
+
+    private static final Logger LOG = LogManager.getLogger(Author.class);
+    public static final String REC_TYPE = "A";
 
 	// Audit event type constants
     private static final String CREATE_EVENT = "Created author";
@@ -147,6 +147,7 @@ public class Author implements Auditable {
     private final SimpleObjectProperty<Gender> gender = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<LocalDate> birthDate = new SimpleObjectProperty<>();
     private final SimpleStringProperty webSite = new SimpleStringProperty();
+    private final SimpleObjectProperty<LocalDateTime> lastModified = new SimpleObjectProperty<>();
 
 	public Author() {
 		this.id.set(-1);
@@ -155,35 +156,33 @@ public class Author implements Auditable {
 		this.gender.set(Gender.UNKNOWN);
 		this.birthDate.set(LocalDate.now());
 		this.webSite.set("");
-	}
+        this.lastModified.set(LocalDateTime.now());
+    }
 
-	public Author(String firstName, String lastName, Gender g, String birthDate) {
-        this.id.set(-1);
-		this.firstName.set(firstName);
-		this.lastName.set(lastName);
+    private Author(int id, String firstName, String lastName, Gender g) {
+        this.id.set(id);
+        this.firstName.set(firstName);
+        this.lastName.set(lastName);
 		this.gender.set(g);
-		this.birthDate.set(LocalDate.parse(birthDate));
+        this.setBirthDate(LocalDate.now());
+        this.webSite.set("");
+        this.lastModified.set(LocalDateTime.now());
+    }
 
-		this.webSite.set("");
-	}
-	
-	public Author(String firstName, String lastName, Gender g, String birthDate, URL webSite) {
-		this(firstName, lastName, g, birthDate);
-		
-		this.webSite.set(webSite.toString());
-	}
-	
-	public Author(String firstName, String lastName, Gender g, String birthDate, String webSite) {
-		this(firstName, lastName, g, birthDate);
+    public Author(int id, String firstName, String lastName, Gender g, LocalDate birthDate, String webSite) {
+        this(id, firstName, lastName, g);
 
-		try {
-			this.webSite.set(new URL(webSite).toString());
-		} catch (MalformedURLException e) {
-		    LOG.warn("Got malformed URL in Author() constructor");
-			LOG.catching(e);
-		}
-	}
-	
+        this.setBirthDate(birthDate);
+        this.webSite.set(webSite.toString());
+    }
+
+    public Author(int id, String firstName, String lastName, Gender g, Date birthDate, String webSite) {
+        this(id, firstName, lastName, g);
+
+        this.setBirthDate(birthDate);
+        this.webSite.set(webSite.toString());
+    }
+
 	@Override
 	public String toString() {
 		return this.getFullName();
@@ -212,11 +211,42 @@ public class Author implements Auditable {
 	    return this.getId();
     }
 
+    /*
+     * OPTIMISTICLOCKED IMPLEMENTATION
+     */
+    public boolean canModify() {
+        Author a = AuthorQuery.getInstance().findById(this.getId());
+
+        return a.getLastModifiedDate().equals(this.getLastModifiedDate());
+    }
+
+    /*
+     * RELOADABLE IMPLEMENTATION
+     */
+
+    /**
+     * Reloads the model data from the database.
+     */
+    public void reload() {
+        Author a = AuthorQuery.getInstance().findById(this.getId());
+
+        this.setFirstName(a.getFirstName());
+        this.setLastName(a.getLastName());
+        this.setBirthDate(a.getBirthDate());
+        this.setGender(a.getGender());
+        this.setSiteUrl(a.getSiteUrl());
+        this.setLastModifiedDate(a.getLastModifiedDate());
+    }
+
 	/*
 	 * MODEL MAGIC!
 	 */
 
 	public void save() throws IllegalArgumentException {
+        if ( this.canModify() ) {
+            throw new IllegalArgumentException("can not modify Author - lock check failed!");
+        }
+
 	    // Do field validation
         if ( !Validate.firstName(this.getFirstName()) ) {
             throw new IllegalArgumentException("firstName must satisfy 0 < length <= 100");
@@ -286,6 +316,10 @@ public class Author implements Auditable {
 
     public Property<String> webSiteProperty() {
         return this.webSite;
+    }
+
+    public Property<LocalDateTime> lastModifiedProperty() {
+        return this.lastModified;
     }
 
 	/*
@@ -409,5 +443,19 @@ public class Author implements Auditable {
      */
     public void setSiteUrl(String s) {
 	    this.webSite.set(s);
+    }
+
+    /**
+     * @return LocalDate last modified time
+     */
+    public LocalDateTime getLastModifiedDate() {
+        return this.lastModified.get();
+    }
+
+    /**
+     * @param l last modified time
+     */
+    public void setLastModifiedDate(LocalDateTime l) {
+        this.lastModified.set(l);
     }
 }
