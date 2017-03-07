@@ -16,24 +16,24 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * CS 4743 Assignment 3 by Sean Johnson
- * 
+ *
  * @author Sean Johnson <isr830@my.utsa.edu>
  */
 public class InventoryMain extends Application {
-	
+
 	// Root logger for the application
 	private static Logger LOG = LogManager.getLogger(InventoryMain.class);
 
 	// Singleton instance
-    private static InventoryMain instance = null;
+	private static InventoryMain instance = null;
 
 	public static InventoryMain getInstance() {
-	    return instance;
-    }
-	
+		return instance;
+	}
+
 	/**
 	 * Public getter for the root pane.
-	 * 
+	 *
 	 * @return BorderPane
 	 */
 	public BorderPane getRootPane() {
@@ -46,31 +46,31 @@ public class InventoryMain extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-	    instance = this;
+		instance = this;
 
-	    // Load the application properties file
-        InventoryProps.getInstance();
+		// Load the application properties file
+		InventoryProps.getInstance();
 
 		// Initialize the FXML loader
 		LOG.debug("Loading root FX view..");
 
 		// Change to the root RXML view
-        ViewManager.getInstance().initView(ViewType.ROOT, null);
+		ViewManager.getInstance().initView(ViewType.ROOT, null);
 
 		// Attach the view to a scene
 		Scene rootScene = new Scene(ViewType.ROOT.getViewInst());
-		
+
 		// Attach scene to the stage
 		primaryStage.setScene(rootScene);
 		primaryStage.setTitle("Section 002 Assignment 3");
 		primaryStage.show();
 
 		// Initialize the database connector..
-        Platform.runLater(() -> {
-            JdbcLoader.getInstance();
-        });
+		Platform.runLater(() -> {
+			JdbcLoader.getInstance();
+		});
 	}
-	
+
 	@Override
 	public void stop() {
 		try {

@@ -100,7 +100,7 @@ public class WaitingPane implements Initializable {
     }
 
     @SuppressWarnings("unused")
-	private void hidePane() {
+    private void hidePane() {
         if ( !isDisplayed() ) {
             return;
         }

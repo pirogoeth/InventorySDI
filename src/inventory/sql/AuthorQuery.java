@@ -27,15 +27,15 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
 
     public void createTable() {
         String query = "CREATE TABLE IF NOT EXISTS `author` (" +
-                "  `id` int(11) NOT NULL AUTO_INCREMENT," +
-                "  `first_name` varchar(100) NOT NULL," +
-                "  `last_name` varchar(100) NOT NULL," +
-                "  `dob` date NOT NULL," +
-                "  `gender` char(1) DEFAULT NULL," +
-                "  `web_site` varchar(100) DEFAULT NULL," +
+            "  `id` int(11) NOT NULL AUTO_INCREMENT," +
+            "  `first_name` varchar(100) NOT NULL," +
+            "  `last_name` varchar(100) NOT NULL," +
+            "  `dob` date NOT NULL," +
+            "  `gender` char(1) DEFAULT NULL," +
+            "  `web_site` varchar(100) DEFAULT NULL," +
             "  `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
-                "  PRIMARY KEY (`id`)" +
-                ") ";
+            "  PRIMARY KEY (`id`)" +
+            ") ";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -60,8 +60,8 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
 
     public boolean create(Author model) {
         String query = "INSERT INTO `author` (" +
-                "`first_name`, `last_name`, `dob`, `gender`, `web_site`)" +
-                "VALUES (?, ?, ?, ?, ?);";
+            "`first_name`, `last_name`, `dob`, `gender`, `web_site`)" +
+            "VALUES (?, ?, ?, ?, ?);";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -96,12 +96,12 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
 
     public boolean update(Author model) {
         String query = "UPDATE `author` SET " +
-                "first_name=?," +
-                "last_name=?," +
-                "dob=?," +
-                "gender=?," +
-                "web_site=?" +
-                "WHERE id=?";
+            "first_name=?," +
+            "last_name=?," +
+            "dob=?," +
+            "gender=?," +
+            "web_site=?" +
+            "WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);

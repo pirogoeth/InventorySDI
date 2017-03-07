@@ -51,7 +51,7 @@ public class Reflect {
      * @return Object return value from `method`
      */
     public static Object oneShot(Object o, String method, Object...args) throws
-            NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         // Check nullity on `o`
         if ( o == null ) {
             throw new NullPointerException("Object param `o` can not be null!");

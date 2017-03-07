@@ -30,46 +30,43 @@ import java.util.ResourceBundle;
 
 public class Root extends EventReceiver implements Initializable {
 
-	private static Logger LOG = LogManager.getLogger(Root.class);
-	private static Root instance = null;
-	
-	public static Root getInstance() {
-		return instance;
-	}
+    private static Logger LOG = LogManager.getLogger(Root.class);
+    private static Root instance = null;
+
+    public static Root getInstance() {
+        return instance;
+    }
 
     private final SimpleBooleanProperty windowCloseDisabled = new SimpleBooleanProperty();
-    @FXML
-    private MenuBar rootMenu;
+
+    @FXML private MenuBar rootMenu;
     @FXML private MenuItem appClose;
-	@FXML private MenuItem windowClose;
-	@FXML private MenuItem authorsNew;
-	@FXML private MenuItem authorsList;
-    @FXML
-    private MenuItem booksNew;
-    @FXML
-    private MenuItem booksList;
-    @FXML
-    private MenuItem auditLog;
+    @FXML private MenuItem windowClose;
+    @FXML private MenuItem authorsNew;
+    @FXML private MenuItem authorsList;
+    @FXML private MenuItem booksNew;
+    @FXML private MenuItem booksList;
+    @FXML private MenuItem auditLog;
 
-	private ViewManager viewMgr;
+    private ViewManager viewMgr;
 
-	/**
-	 * Create the root instance and set up the singleton
-	 */
-	public Root() {
-	    this.viewMgr = ViewManager.getInstance();
+    /**
+     * Create the root instance and set up the singleton
+     */
+    public Root() {
+        this.viewMgr = ViewManager.getInstance();
 
-		instance = this;
-	}
+        instance = this;
+    }
 
     private boolean ensureDetailsSaved() {
         Alert a = new Alert(
             AlertType.CONFIRMATION,
-                "Are you sure you want to navigate away without saving?",
-                ButtonType.NO,
-                ButtonType.YES
+            "Are you sure you want to navigate away without saving?",
+            ButtonType.NO,
+            ButtonType.YES
         );
-	    Optional<ButtonType> result = a.showAndWait();
+        Optional<ButtonType> result = a.showAndWait();
         if ( result.isPresent() && result.get() == ButtonType.YES ) {
             return true;
         } else {
@@ -77,11 +74,11 @@ public class Root extends EventReceiver implements Initializable {
         }
     }
 
-	@FXML
-	private void handleMenuAction(ActionEvent event) throws IOException {
-		Object source = event.getSource();
-		
-		LOG.debug("Handling menu action!");
+    @FXML
+    private void handleMenuAction(ActionEvent event) throws IOException {
+        Object source = event.getSource();
+
+        LOG.debug("Handling menu action!");
 
         // Load the authors list.
         try {
@@ -102,7 +99,7 @@ public class Root extends EventReceiver implements Initializable {
 
         this.windowCloseDisabled.set(false);
 
-		if ( source == this.appClose ) {
+        if ( source == this.appClose ) {
             // Application needs to close
             LOG.info("Application is now shutting down!");
 
@@ -117,7 +114,7 @@ public class Root extends EventReceiver implements Initializable {
                 this.viewMgr.changeView(null, listView);
             }
 
-		} else if ( source == this.authorsList ) {
+        } else if ( source == this.authorsList ) {
             // Load the authors list.
             LOG.info("Loading authors list");
             if ( this.viewMgr.initView(ViewType.AUTHOR_LIST) ) {
@@ -188,9 +185,9 @@ public class Root extends EventReceiver implements Initializable {
         }
     }
 
-	@Override
+    @Override
     public void receiveEvent(Event ev) {
-	    // Receive waiting events
+        // Receive waiting events
         switch (ev.getEventType()) {
             case START_WAIT:
                 // Disable the rootMenu so the user can't load the author list
@@ -222,12 +219,12 @@ public class Root extends EventReceiver implements Initializable {
                 break;
         }
     }
-	
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		LOG.debug("Initialize root controller");
 
-		this.registerToReceive(EventType.START_WAIT, EventType.STOP_WAIT);
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        LOG.debug("Initialize root controller");
+
+        this.registerToReceive(EventType.START_WAIT, EventType.STOP_WAIT);
 
         // Bind the `Close` disable property.
         this.windowCloseDisabled.set(true);

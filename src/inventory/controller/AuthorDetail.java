@@ -70,9 +70,9 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
         } catch (IllegalArgumentException ex) {
             LOG.catching(ex);
             Alert a = new Alert(
-                    AlertType.ERROR,
-                    "Error while saving: " + ex.getMessage(),
-                    ButtonType.OK
+                AlertType.ERROR,
+                "Error while saving: " + ex.getMessage(),
+                ButtonType.OK
             );
             a.showAndWait();
             return;
@@ -89,14 +89,14 @@ public class AuthorDetail extends EventReceiver implements Initializable, Conten
 
     @FXML private void handleDeleteDetails(ActionEvent evt) {
         Alert a = new Alert(
-                AlertType.CONFIRMATION,
-                "Are you sure you want to delete this author?",
-                ButtonType.YES,
-                ButtonType.NO
+            AlertType.CONFIRMATION,
+            "Are you sure you want to delete this author?",
+            ButtonType.YES,
+            ButtonType.NO
         );
         a.showAndWait()
-                .filter(response -> response == ButtonType.YES)
-                .ifPresent(response -> this.performDelete());
+            .filter(response -> response == ButtonType.YES)
+            .ifPresent(response -> this.performDelete());
     }
 
     private void performDelete() {

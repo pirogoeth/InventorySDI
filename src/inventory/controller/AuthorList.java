@@ -81,15 +81,15 @@ public class AuthorList extends EventReceiver implements Initializable {
         LOG.info("Loading author detail");
         if ( this.viewMgr.initView(ViewType.AUTHOR_DETAIL, clicked) ) {
             Reflect.unsafeOneShot(
-                    ViewType.AUTHOR_DETAIL.getController(),
-                    "setModified",
-                    false
+                ViewType.AUTHOR_DETAIL.getController(),
+                "setModified",
+                false
             );
             this.viewMgr.modifyViewState((viewState) ->
-                    new ViewState(
-                            ViewType.AUTHOR_LIST.getViewInst(),
-                            ViewType.AUTHOR_DETAIL.getViewInst()
-                    )
+                new ViewState(
+                    ViewType.AUTHOR_LIST.getViewInst(),
+                    ViewType.AUTHOR_DETAIL.getViewInst()
+                )
             );
         }
     }

@@ -25,56 +25,56 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
     private static final Logger LOG = LogManager.getLogger(Author.class);
     public static final String REC_TYPE = "A";
 
-	// Audit event type constants
+    // Audit event type constants
     private static final String CREATE_EVENT = "Created author";
     private static final String UPDATE_EVENT = "Updated author";
     private static final String DELETE_EVENT = "Deleted author";
-	
-	public enum Gender {
-		MALE,
-		FEMALE,
-		UNKNOWN;
 
-		public char asChar() {
-		    return this.name().toLowerCase().charAt(0);
+    public enum Gender {
+        MALE,
+        FEMALE,
+        UNKNOWN;
+
+        public char asChar() {
+            return this.name().toLowerCase().charAt(0);
         }
-		
-		public static List<Gender> choices() {
-			return Arrays.asList(Gender.values());
-		}
-		
-		public static ObservableList<Gender> choicesAsObservables() {
-			return choices()
-					.stream()
-					.collect(Collectors.toCollection(FXCollections::observableArrayList));
-		}
-		
-		public static List<String> choicesAsStrings() {
-			return choices()
-					.stream()
-					.map((c) -> c.name())
-					.collect(Collectors.toList());
-		}
-		
-		public static ObservableList<String> choicesAsObservableStrings() {
-			return choices()
-					.stream()
-					.map((c) -> c.name())
-					.collect(Collectors.toCollection(FXCollections::observableArrayList));
-		}
-		
-		public static Gender fromString(String gender) {
-			if ( gender.equalsIgnoreCase("male") ) {
-				return Gender.MALE;
-			} else if ( gender.equalsIgnoreCase("female") ) {
-				return Gender.FEMALE;
-			} else {
-				return Gender.UNKNOWN;
-			}
-		}
 
-		public static Gender fromChar(char ch) {
-		    switch (ch) {
+        public static List<Gender> choices() {
+            return Arrays.asList(Gender.values());
+        }
+
+        public static ObservableList<Gender> choicesAsObservables() {
+            return choices()
+                .stream()
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+
+        public static List<String> choicesAsStrings() {
+            return choices()
+                .stream()
+                .map((c) -> c.name())
+                .collect(Collectors.toList());
+        }
+
+        public static ObservableList<String> choicesAsObservableStrings() {
+            return choices()
+                .stream()
+                .map((c) -> c.name())
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+
+        public static Gender fromString(String gender) {
+            if ( gender.equalsIgnoreCase("male") ) {
+                return Gender.MALE;
+            } else if ( gender.equalsIgnoreCase("female") ) {
+                return Gender.FEMALE;
+            } else {
+                return Gender.UNKNOWN;
+            }
+        }
+
+        public static Gender fromChar(char ch) {
+            switch (ch) {
                 case 'm':
                     return Gender.MALE;
                 case 'f':
@@ -83,29 +83,29 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
                     return Gender.UNKNOWN;
             }
         }
-	}
-	
-	public static class Validate {
-	    static boolean nonNull(Object o) {
-	        if ( o == null ) {
-	            return false;
+    }
+
+    public static class Validate {
+        static boolean nonNull(Object o) {
+            if ( o == null ) {
+                return false;
             }
 
             return true;
         }
 
-	    static boolean id(int i) {
-	        if ( i >= 0 ) {
-	            return true;
+        static boolean id(int i) {
+            if ( i >= 0 ) {
+                return true;
             }
 
             return false;
         }
 
         static boolean firstName(String s) {
-	        if ( !nonNull(s) ) return false;
-	        if ( s.length() <= 100 && !s.isEmpty() ) {
-	            return true;
+            if ( !nonNull(s) ) return false;
+            if ( s.length() <= 100 && !s.isEmpty() ) {
+                return true;
             }
 
             return false;
@@ -121,7 +121,7 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
         }
 
         static boolean gender(char ch) {
-	        switch (Character.toLowerCase(ch)) {
+            switch (Character.toLowerCase(ch)) {
                 case 'f':
                 case 'm':
                 case 'u':
@@ -149,13 +149,13 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
     private final SimpleStringProperty webSite = new SimpleStringProperty();
     private final SimpleObjectProperty<LocalDateTime> lastModified = new SimpleObjectProperty<>();
 
-	public Author() {
-		this.id.set(-1);
-		this.firstName.set("");
-		this.lastName.set("");
-		this.gender.set(Gender.UNKNOWN);
-		this.birthDate.set(LocalDate.now());
-		this.webSite.set("");
+    public Author() {
+        this.id.set(-1);
+        this.firstName.set("");
+        this.lastName.set("");
+        this.gender.set(Gender.UNKNOWN);
+        this.birthDate.set(LocalDate.now());
+        this.webSite.set("");
         this.lastModified.set(LocalDateTime.now());
     }
 
@@ -163,7 +163,7 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
         this.id.set(id);
         this.firstName.set(firstName);
         this.lastName.set(lastName);
-		this.gender.set(g);
+        this.gender.set(g);
         this.setBirthDate(LocalDate.now());
         this.webSite.set("");
         this.lastModified.set(LocalDateTime.now());
@@ -183,32 +183,32 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
         this.webSite.set(webSite.toString());
     }
 
-	@Override
-	public String toString() {
-		return this.getFullName();
-	}
+    @Override
+    public String toString() {
+        return this.getFullName();
+    }
 
 	/*
 	 * AUDITABLE IMPLEMENTATION
 	 */
 
-	public String auditString() {
-		return String.format(
-				"[%s|%s|%c|%s|%s]",
-				this.getFirstName(),
-				this.getLastName(),
-				this.getGender().asChar(),
-				this.getBirthDate().toString(),
-				this.getSiteUrl()
-		);
-	}
+    public String auditString() {
+        return String.format(
+            "[%s|%s|%c|%s|%s]",
+            this.getFirstName(),
+            this.getLastName(),
+            this.getGender().asChar(),
+            this.getBirthDate().toString(),
+            this.getSiteUrl()
+        );
+    }
 
-	public String auditRecordType() {
-	    return REC_TYPE;
+    public String auditRecordType() {
+        return REC_TYPE;
     }
 
     public int auditRecordId() {
-	    return this.getId();
+        return this.getId();
     }
 
     /*
@@ -242,12 +242,12 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
 	 * MODEL MAGIC!
 	 */
 
-	public void save() throws IllegalArgumentException {
+    public void save() throws IllegalArgumentException {
         if ( this.canModify() ) {
             throw new IllegalArgumentException("can not modify Author - lock check failed!");
         }
 
-	    // Do field validation
+        // Do field validation
         if ( !Validate.firstName(this.getFirstName()) ) {
             throw new IllegalArgumentException("firstName must satisfy 0 < length <= 100");
         }
@@ -264,7 +264,7 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
             throw new IllegalArgumentException("gender must be either MALE, FEMALE, or UNKNOWN");
         }
 
-	    // If id == -1, this is a create. Otherwise, it's an update.
+        // If id == -1, this is a create. Otherwise, it's an update.
         if ( this.id.get() == -1 ) {
             LOG.debug(String.format("Executing creation query for Author '%s'", this));
             AuthorQuery.getInstance().create(this);
@@ -329,8 +329,8 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
     /**
      * @return model id
      */
-	public int getId() {
-	    return this.id.get();
+    public int getId() {
+        return this.id.get();
     }
 
     /**
@@ -340,76 +340,76 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
         this.id.set(i);
     }
 
-	/**
-	 * @return the firstName
-	 */
-	public String getFirstName() {
-		return this.firstName.get();
-	}
+    /**
+     * @return the firstName
+     */
+    public String getFirstName() {
+        return this.firstName.get();
+    }
 
     /**
      * @param s String
      */
-	public void setFirstName(String s) {
-	    this.firstName.set(s);
+    public void setFirstName(String s) {
+        this.firstName.set(s);
     }
 
-	/**
-	 * @return the lastName
-	 */
-	public String getLastName() {
-		return this.lastName.get();
-	}
+    /**
+     * @return the lastName
+     */
+    public String getLastName() {
+        return this.lastName.get();
+    }
 
     /**
      * @param s String
      */
-	public void setLastName(String s) {
-	    this.lastName.set(s);
+    public void setLastName(String s) {
+        this.lastName.set(s);
     }
 
-	/**
-	 * @return merged string firstName + lastName
-	 */
-	public String getFullName() {
-		return String.format("%s %s", this.getFirstName(), this.getLastName());
-	}
+    /**
+     * @return merged string firstName + lastName
+     */
+    public String getFullName() {
+        return String.format("%s %s", this.getFirstName(), this.getLastName());
+    }
 
-	/**
-	 * @return the gender
-	 */
-	public Gender getGender() {
-		return this.gender.get();
-	}
+    /**
+     * @return the gender
+     */
+    public Gender getGender() {
+        return this.gender.get();
+    }
 
     /**
      * @param g Gender
      */
-	public void setGender(Gender g) {
-	    this.gender.set(g);
+    public void setGender(Gender g) {
+        this.gender.set(g);
     }
 
     /**
      * @param ch char
      */
     public void setGender(char ch) {
-	    this.setGender(Gender.fromChar(ch));
+        this.setGender(Gender.fromChar(ch));
     }
-	
-	/**
-	 * @return string of the gender
-	 */
-	public String getGenderString() {
-		return this.gender.get().name();
-	}
 
-	/**
-	 * @return the birthDate
-	 */
-	public LocalDate getBirthDate() {
-		return this.birthDate.get();
-	}
-	
+    /**
+     * @return string of the gender
+     */
+    public String getGenderString() {
+        return this.gender.get().name();
+    }
+
+    /**
+     * @return the birthDate
+     */
+    public LocalDate getBirthDate() {
+        return this.birthDate.get();
+    }
+
     /**
      * @param l LocalDate
      */
@@ -424,25 +424,25 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
         this.setBirthDate(Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate());
     }
 
-	/**
-	 * @return the webSite
-	 */
-	public String getSiteUrl() {
-		return this.webSite.get();
-	}
+    /**
+     * @return the webSite
+     */
+    public String getSiteUrl() {
+        return this.webSite.get();
+    }
 
     /**
      * @param u URL site url as URL object
      */
-	public void setSiteUrl(URL u) {
-	    this.webSite.set(u.toString());
+    public void setSiteUrl(URL u) {
+        this.webSite.set(u.toString());
     }
 
     /**
      * @param s String site URL as unchecked string
      */
     public void setSiteUrl(String s) {
-	    this.webSite.set(s);
+        this.webSite.set(s);
     }
 
     /**

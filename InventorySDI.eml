@@ -18,6 +18,9 @@
 	<lib name="log4j-api-2.7-javadoc.jar" scope="COMPILE">
 		<relative-module-cls project-related="jar://$PROJECT_DIR$/log4j-api-2.7-javadoc.jar!/"/>
 	</lib>
+	<lib name="mysql-connector-java-5.1.40-bin.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/mysql-connector-java-5.1.40-bin.jar!/"/>
+	</lib>
 	<levels>
 		<level name="mysql-connector-java-5.1.40-bin" value="project"/>
 	</levels>

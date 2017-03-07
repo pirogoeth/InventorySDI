@@ -124,10 +124,10 @@ public class Book implements Auditable, OptimisticLocked, Reloadable {
     public String auditString() {
         return String.format(
             "[%d|%s|%s|%s|%d]",
-                this.getId(),
-                this.getTitle(),
-                this.getPublisher(),
-                this.getPublishDate().toString(),
+            this.getId(),
+            this.getTitle(),
+            this.getPublisher(),
+            this.getPublishDate().toString(),
             this.getAuthorId()
         );
     }
@@ -290,8 +290,8 @@ public class Book implements Auditable, OptimisticLocked, Reloadable {
     /**
      * @return int model id
      */
-	public int getId() {
-	    return this.id.get();
+    public int getId() {
+        return this.id.get();
     }
 
     /**

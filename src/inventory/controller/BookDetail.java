@@ -38,21 +38,14 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
 
     private Book currentBook;
 
-    @FXML
-    private TextField titleField;
-    @FXML
-    private TextField publisherField;
-    @FXML
-    private DatePicker pubDateField;
-    @FXML
-    private ChoiceBox<Author> authorField;
-    @FXML
-    private TextArea summaryField;
+    @FXML private TextField titleField;
+    @FXML private TextField publisherField;
+    @FXML private DatePicker pubDateField;
+    @FXML private ChoiceBox<Author> authorField;
+    @FXML private TextArea summaryField;
 
-    @FXML
-    private Button detailSave;
-    @FXML
-    private Button detailDelete;
+    @FXML private Button detailSave;
+    @FXML private Button detailDelete;
 
     private boolean deleteDisabled = false;
     private boolean modified = false;

@@ -27,13 +27,13 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
 
     public void createTable() {
         String query = "CREATE TABLE IF NOT EXISTS `audit_log` (" +
-                "  `id` int(11) not null AUTO_INCREMENT," +
-                "  `record_type` char(1) not null default 'a'," +
-                "  `record_id` int not null," +
-                "  `date_added` TIMESTAMP default CURRENT_TIMESTAMP, " +
-                "  `entry_msg` varchar(255) not null," +
-                "  PRIMARY KEY (`id`)" +
-                "); ";
+            "  `id` int(11) not null AUTO_INCREMENT," +
+            "  `record_type` char(1) not null default 'a'," +
+            "  `record_id` int not null," +
+            "  `date_added` TIMESTAMP default CURRENT_TIMESTAMP, " +
+            "  `entry_msg` varchar(255) not null," +
+            "  PRIMARY KEY (`id`)" +
+            "); ";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -47,8 +47,8 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
 
         // Create indexes...
         String[] indexQueries = {
-                "create index if not exists idxRecType on audit_log (record_type);",
-                "create index if not exists idxRecId on audit_log (record_id);"
+            "create index if not exists idxRecType on audit_log (record_type);",
+            "create index if not exists idxRecId on audit_log (record_id);"
         };
 
         for (String indexQ : indexQueries) {
@@ -65,8 +65,8 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
 
     public boolean create(Audit model) {
         String query = "INSERT INTO `audit_log` (" +
-                "`record_type`, `record_id`, `date_added`, `entry_msg`)" +
-                "VALUES (?, ?, ?, ?);";
+            "`record_type`, `record_id`, `date_added`, `entry_msg`)" +
+            "VALUES (?, ?, ?, ?);";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -107,11 +107,11 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
 
     public boolean update(Audit model) {
         String query = "UPDATE `audit_log` SET " +
-                "record_type=?," +
-                "record_id=?," +
-                "date_added=?," +
-                "entry_msg=?," +
-                "WHERE id=?";
+            "record_type=?," +
+            "record_id=?," +
+            "date_added=?," +
+            "entry_msg=?," +
+            "WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);

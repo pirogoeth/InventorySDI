@@ -29,14 +29,10 @@ public class AuditView extends EventReceiver implements Initializable {
     private final SimpleListProperty<Audit> authorAuditsProperty = new SimpleListProperty<>();
     private final SimpleListProperty<Audit> bookAuditsProperty = new SimpleListProperty<>();
 
-    @FXML
-    private Label authorAuditLabel;
-    @FXML
-    private ListView authorAuditList;
-    @FXML
-    private Label bookAuditLabel;
-    @FXML
-    private ListView bookAuditList;
+    @FXML private Label authorAuditLabel;
+    @FXML private ListView authorAuditList;
+    @FXML private Label bookAuditLabel;
+    @FXML private ListView bookAuditList;
 
     public AuditView() {
         this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
@@ -56,14 +52,14 @@ public class AuditView extends EventReceiver implements Initializable {
     private void populateAuditsList() {
         ObservableList<Audit> audits = AuditQuery.getInstance().findAll();
         this.authorAuditsProperty.set(
-                audits.stream()
-                        .filter(a -> a.getRecordType().equals(Author.REC_TYPE))
-                        .collect(Collectors.toCollection(FXCollections::observableArrayList))
+            audits.stream()
+                .filter(a -> a.getRecordType().equals(Author.REC_TYPE))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList))
         );
         this.bookAuditsProperty.set(
-                audits.stream()
-                        .filter(a -> a.getRecordType().equals(Book.REC_TYPE))
-                        .collect(Collectors.toCollection(FXCollections::observableArrayList))
+            audits.stream()
+                .filter(a -> a.getRecordType().equals(Book.REC_TYPE))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList))
         );
     }
 

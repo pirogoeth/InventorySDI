@@ -8,7 +8,7 @@ package inventory.event;
 public interface IEvent {
 	Object getSource();
 	SourceType getSourceType();
-	
+
 	boolean isCancelled();
 	void cancel();
 }

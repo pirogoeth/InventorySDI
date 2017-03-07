@@ -80,10 +80,10 @@ public class Audit {
 
     public Audit(Auditable auditable, String eventType) {
         this(
-                auditable.auditRecordType(),
-                auditable.auditRecordId(),
-                LocalDate.now(),
-                String.format("%s: %s", eventType, auditable.auditString())
+            auditable.auditRecordType(),
+            auditable.auditRecordId(),
+            LocalDate.now(),
+            String.format("%s: %s", eventType, auditable.auditString())
         );
     }
 
@@ -96,9 +96,9 @@ public class Audit {
     @Override
     public String toString() {
         return String.format(
-                "%s ~> %s",
-                this.getEntryDate(),
-                this.getEntryMessage()
+            "%s ~> %s",
+            this.getEntryDate(),
+            this.getEntryMessage()
         );
     }
 

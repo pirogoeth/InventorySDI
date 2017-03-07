@@ -28,18 +28,18 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     public void createTable() {
         // Create the table
         String query = "CREATE TABLE IF NOT EXISTS `book` (" +
-                "  `id` int(11) NOT NULL AUTO_INCREMENT," +
-                "  `title` varchar(100) NOT NULL," +
-                "  `publisher` varchar(100) NOT NULL," +
-                "  `date_published` date NOT NULL," +
-                "  `summary` text NOT NULL," +
-                "  `author_id` int(11) NOT NULL," +
-                "  `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
-                "  PRIMARY KEY (`id`)," +
+            "  `id` int(11) NOT NULL AUTO_INCREMENT," +
+            "  `title` varchar(100) NOT NULL," +
+            "  `publisher` varchar(100) NOT NULL," +
+            "  `date_published` date NOT NULL," +
+            "  `summary` text NOT NULL," +
+            "  `author_id` int(11) NOT NULL," +
+            "  `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
+            "  PRIMARY KEY (`id`)," +
             "  FOREIGN KEY (`author_id`) REFERENCES author(`id`)" +
             "       ON DELETE CASCADE" +
             "       ON UPDATE CASCADE" +
-                ") ";
+            ") ";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -185,12 +185,12 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
             while ( r.next() ) {
                 Book b = new Book(
-                        r.getInt("id"),
-                        r.getString("title"),
-                        r.getString("publisher"),
-                        r.getDate("date_published"),
-                        r.getString("summary"),
-                        r.getInt("author_id"),
+                    r.getInt("id"),
+                    r.getString("title"),
+                    r.getString("publisher"),
+                    r.getDate("date_published"),
+                    r.getString("summary"),
+                    r.getInt("author_id"),
                     r.getTimestamp("last_modified").toLocalDateTime()
                 );
                 all.add(b);
@@ -219,12 +219,12 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                 // Now at the first row -- id is primary, unique, so only one row max
                 // will be returned.
                 Book b = new Book(
-                        r.getInt("id"),
-                        r.getString("title"),
-                        r.getString("publisher"),
-                        r.getDate("date_published"),
-                        r.getString("summary"),
-                        r.getInt("author_id"),
+                    r.getInt("id"),
+                    r.getString("title"),
+                    r.getString("publisher"),
+                    r.getDate("date_published"),
+                    r.getString("summary"),
+                    r.getInt("author_id"),
                     r.getTimestamp("last_modified").toLocalDateTime()
                 );
 
