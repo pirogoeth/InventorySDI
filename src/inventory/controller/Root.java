@@ -6,6 +6,7 @@ import inventory.event.EventType;
 import inventory.event.Quick;
 import inventory.models.Author;
 import inventory.models.Book;
+import inventory.models.Library;
 import inventory.util.Reflect;
 import inventory.view.ViewManager;
 import inventory.view.ViewType;
@@ -46,6 +47,8 @@ public class Root extends EventReceiver implements Initializable {
     @FXML private MenuItem authorsList;
     @FXML private MenuItem booksNew;
     @FXML private MenuItem booksList;
+    @FXML private MenuItem libraryNew;
+    @FXML private MenuItem libraryList;
     @FXML private MenuItem auditLog;
 
     private ViewManager viewMgr;
@@ -80,7 +83,7 @@ public class Root extends EventReceiver implements Initializable {
 
         LOG.debug("Handling menu action!");
 
-        // Load the authors list.
+        // Ensure changes are saved before navigating away.
         try {
             if ( this.viewMgr.viewIsActive(ViewType.AUTHOR_DETAIL) && ViewType.AUTHOR_DETAIL.isContentModified() ) {
                 if ( !this.ensureDetailsSaved() ) {
@@ -88,6 +91,11 @@ public class Root extends EventReceiver implements Initializable {
                     return;
                 }
             } else if ( this.viewMgr.viewIsActive(ViewType.BOOK_DETAIL) && ViewType.BOOK_DETAIL.isContentModified() ) {
+                if ( !this.ensureDetailsSaved() ) {
+                    Quick.dispatchModelReload(this);
+                    return;
+                }
+            } else if ( this.viewMgr.viewIsActive(ViewType.LIBRARY_DETAIL) && ViewType.AUTHOR_DETAIL.isContentModified() ) {
                 if ( !this.ensureDetailsSaved() ) {
                     Quick.dispatchModelReload(this);
                     return;
@@ -125,7 +133,7 @@ public class Root extends EventReceiver implements Initializable {
 
         } else if ( source == this.authorsNew )	{
             // Creating a new author - open the details pane. BLANK!
-            LOG.info("Opening details pane to create new author");
+            LOG.debug("Opening details pane to create new author");
             Author newAuthor = new Author();
 
             if ( this.viewMgr.initView(ViewType.AUTHOR_DETAIL, newAuthor) ) {
@@ -143,7 +151,7 @@ public class Root extends EventReceiver implements Initializable {
             }
 
         } else if ( source == this.booksList ) {
-            // Load the authors list.
+            // Load the books list.
             LOG.info("Loading books list");
             if ( this.viewMgr.initView(ViewType.BOOK_LIST) ) {
                 Parent listView = ViewType.BOOK_LIST.getViewInst();
@@ -152,8 +160,8 @@ public class Root extends EventReceiver implements Initializable {
             }
 
         } else if ( source == this.booksNew ) {
-            // Creating a new author - open the details pane. BLANK!
-            LOG.info("Opening details pane to create new book");
+            // Creating a new book - open the details pane. BLANK!
+            LOG.debug("Opening details pane to create new book");
             Book newBook = new Book();
 
             if ( this.viewMgr.initView(ViewType.BOOK_DETAIL, newBook) ) {
@@ -168,6 +176,34 @@ public class Root extends EventReceiver implements Initializable {
             } else {
                 // Uhhhh
                 LOG.fatal("Could not initialize Book detail view");
+            }
+
+        } else if ( source == this.libraryList ) {
+            // Load the books list.
+            LOG.info("Loading library list");
+            if ( this.viewMgr.initView(ViewType.LIBRARY_LIST) ) {
+                Parent listView = ViewType.LIBRARY_LIST.getViewInst();
+
+                this.viewMgr.changeView(null, listView);
+            }
+
+        } else if ( source == this.libraryNew ) {
+            // Creating a new library - open the details pane. BLANK!
+            LOG.debug("Opening details pane to create new library");
+            Library newLibrary = new Library();
+
+            if ( this.viewMgr.initView(ViewType.LIBRARY_DETAIL, newLibrary) ) {
+                Parent detailView = ViewType.LIBRARY_DETAIL.getViewInst();
+
+                // And here we go shooting into the dark
+                Object ctrl = ViewType.LIBRARY_DETAIL.getController();
+                Reflect.unsafeOneShot(ctrl, "setDeleteDisabled", true);
+                Reflect.unsafeOneShot(ctrl, "setModified", true);
+
+                this.viewMgr.changeView(null, detailView);
+            } else {
+                // Uhhhh
+                LOG.fatal("Could not initialize Library detail view");
             }
 
         } else if ( source == this.windowClose ) {

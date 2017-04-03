@@ -10,4 +10,5 @@ public interface IQueryBase<T> {
     boolean delete(T model);
     List<T> findAll();
     T findById(int id);
+
 }

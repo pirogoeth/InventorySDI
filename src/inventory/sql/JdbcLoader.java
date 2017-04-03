@@ -96,7 +96,14 @@ public class JdbcLoader {
             LOG.catching(ex);
         }
 
-        Class<? extends Connector>[] queryClasses = new Class[]{AuthorQuery.class, AuditQuery.class, BookQuery.class};
+        @SuppressWarnings("unchecked")
+        Class<? extends Connector>[] queryClasses = new Class[]{
+                AuthorQuery.class,
+                AuditQuery.class,
+                BookQuery.class,
+                LibraryQuery.class,
+                LibraryBookQuery.class,
+        };
 
         for (Class<? extends Connector> cls : queryClasses) {
             // Set the connection object in the IQueryBase<T> + Connector classes.

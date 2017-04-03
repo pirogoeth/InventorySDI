@@ -216,6 +216,10 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
      */
     public boolean canModify() {
         Author a = AuthorQuery.getInstance().findById(this.getId());
+        if ( a == null ) {
+            // Author does not exist so do the thing!
+            return true;
+        }
 
         return a.getLastModifiedDate().equals(this.getLastModifiedDate());
     }
@@ -243,7 +247,7 @@ public class Author implements Auditable, OptimisticLocked, Reloadable {
 	 */
 
     public void save() throws IllegalArgumentException {
-        if ( this.canModify() ) {
+        if ( ! this.canModify() ) {
             throw new IllegalArgumentException("can not modify Author - lock check failed!");
         }
 

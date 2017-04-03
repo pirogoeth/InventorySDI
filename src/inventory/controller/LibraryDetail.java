@@ -1,49 +1,45 @@
 package inventory.controller;
 
 import inventory.event.Event;
-import inventory.event.EventReceiver;
 import inventory.event.EventType;
-import inventory.models.Author;
-import inventory.models.Book;
-import inventory.sql.AuthorQuery;
+import inventory.models.Library;
+import inventory.models.LibraryBook;
 import inventory.view.ContentModifiable;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import static inventory.event.Quick.dispatchViewRefresh;
 
-public class BookDetail extends EventReceiver implements Initializable, ContentModifiable {
+public class LibraryDetail extends EventedClickHandler implements Initializable, ContentModifiable {
 
     @SuppressWarnings( "unused" )
-    private static Logger LOG = LogManager.getLogger(BookDetail.class);
-    private static BookDetail instance = null;
+    private static Logger LOG = LogManager.getLogger(LibraryDetail.class);
+    private static LibraryDetail instance = null;
 
     /**
      * Returns the single instance for this controller.
      *
      * @return BookDetail
      */
-    public static BookDetail getInstance() {
+    public static LibraryDetail getInstance() {
         return instance;
     }
 
-    private Book currentBook;
+    private Library currentLibrary;
 
-    @FXML private TextField titleField;
-    @FXML private TextField publisherField;
-    @FXML private DatePicker pubDateField;
-    @FXML private ChoiceBox<Author> authorField;
-    @FXML private TextArea summaryField;
+    @FXML private TextField nameField;
+    @FXML private TableView<LibraryBook> bookTable;
 
     @FXML private Button detailSave;
     @FXML private Button detailDelete;
@@ -51,10 +47,19 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
     private boolean deleteDisabled = false;
     private boolean modified = false;
 
-    public BookDetail(Book book) {
+    public LibraryDetail(Library current) {
         instance = this;
 
-        this.currentBook = book;
+        this.currentLibrary = current;
+    }
+
+    protected void handleSingleClick(MouseEvent evt) throws IOException {
+        return;
+    }
+
+    protected void handleDoubleClick(MouseEvent evt) throws IOException {
+        // XXX - stub
+        return;
     }
 
     public boolean isContentModified() {
@@ -68,8 +73,8 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
 
     @FXML
     private void handleSaveDetails(ActionEvent evt) {
+        this.currentLibrary.save();
         try {
-            this.currentBook.save();
             this.modified = false;
         } catch ( IllegalArgumentException ex ) {
             LOG.catching(ex);
@@ -95,7 +100,7 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
     private void handleDeleteDetails(ActionEvent evt) {
         Alert a = new Alert(
             AlertType.CONFIRMATION,
-            "Are you sure you want to delete this book?",
+            "Are you sure you want to delete this library?",
             ButtonType.YES,
             ButtonType.NO
         );
@@ -105,7 +110,7 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
     }
 
     private void performDelete() {
-        this.currentBook.delete();
+        this.currentLibrary.delete();
         dispatchViewRefresh(this);
 
         // Disable deletion of a no long in-database record...
@@ -115,24 +120,11 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        LOG.info("initializing BookDetail controller");
+        LOG.info("initializing LibraryDetail controller");
 
         this.registerToReceive(EventType.MODEL_RELOAD);
 
-        ObservableList<Author> authorList = AuthorQuery.getInstance().findAll();
-
-        this.authorField.setItems(authorList);
-
-        this.titleField.textProperty().bindBidirectional(this.currentBook.titleProperty());
-        this.publisherField.textProperty().bindBidirectional(this.currentBook.publisherProperty());
-        this.pubDateField.valueProperty().bindBidirectional(this.currentBook.publishDateProperty());
-        this.summaryField.textProperty().bindBidirectional(this.currentBook.summaryProperty());
-        this.authorField.valueProperty().bindBidirectional(this.currentBook.authorObjectProperty());
-
-        boolean authorsHas = authorList.contains(this.currentBook.getAuthor());
-        System.out.println("Author list contains current: " + authorsHas);
-
-        this.authorField.getSelectionModel().select(1);
+        this.nameField.textProperty().bindBidirectional(this.currentLibrary.nameProperty());
 
         // Update the deletion button state
         this.updateDeleteState();
@@ -143,7 +135,7 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
         // Receive waiting events
         switch ( ev.getEventType() ) {
             case MODEL_RELOAD:
-                this.currentBook.reload();
+                this.currentLibrary.reload();
             default:
                 break;
         }

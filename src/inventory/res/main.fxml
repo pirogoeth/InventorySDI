@@ -5,40 +5,47 @@
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111"
             xmlns:fx="http://javafx.com/fxml/1">
-   <top>
-      <MenuBar fx:id="rootMenu" BorderPane.alignment="CENTER">
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-              <MenuItem fx:id="appClose" mnemonicParsing="false" onAction="#handleMenuAction" text="Quit" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Authors">
-            <items>
-                  <MenuItem fx:id="authorsNew" mnemonicParsing="false" onAction="#handleMenuAction" text="Add New..." />
-                  <SeparatorMenuItem mnemonicParsing="false" />
-              <MenuItem fx:id="authorsList" mnemonicParsing="false" onAction="#handleMenuAction" text="List" />
-            </items>
-          </Menu>
-            <Menu mnemonicParsing="false" text="Books">
-                <items>
-                    <MenuItem fx:id="booksNew" mnemonicParsing="false" onAction="#handleMenuAction" text="Add New..."/>
-                    <SeparatorMenuItem mnemonicParsing="false"/>
-                    <MenuItem fx:id="booksList" mnemonicParsing="false" onAction="#handleMenuAction" text="List"/>
-                </items>
-            </Menu>
-            <Menu mnemonicParsing="false" text="Window">
-              <items>
-                  <MenuItem fx:id="auditLog" mnemonicParsing="false" onAction="#handleMenuAction" text="Audit Log" />
-                <MenuItem fx:id="windowClose" mnemonicParsing="false" onAction="#handleMenuAction" text="Close" />
-              </items>
-            </Menu>
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
-   </top>
+    <top>
+        <MenuBar fx:id="rootMenu" BorderPane.alignment="CENTER">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem fx:id="appClose" mnemonicParsing="false" onAction="#handleMenuAction" text="Quit" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Authors">
+                    <items>
+                        <MenuItem fx:id="authorsNew" mnemonicParsing="false" onAction="#handleMenuAction" text="Add New..." />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="authorsList" mnemonicParsing="false" onAction="#handleMenuAction" text="List" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Books">
+                    <items>
+                        <MenuItem fx:id="booksNew" mnemonicParsing="false" onAction="#handleMenuAction" text="Add New..."/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem fx:id="booksList" mnemonicParsing="false" onAction="#handleMenuAction" text="List"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Libraries">
+                    <items>
+                        <MenuItem fx:id="libraryNew" mnemonicParsing="false" onAction="#handleMenuAction" text="Add New..."/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem fx:id="libraryList" mnemonicParsing="false" onAction="#handleMenuAction" text="List"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Window">
+                    <items>
+                        <MenuItem fx:id="auditLog" mnemonicParsing="false" onAction="#handleMenuAction" text="Audit Log" />
+                        <MenuItem fx:id="windowClose" mnemonicParsing="false" onAction="#handleMenuAction" text="Close" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
 </BorderPane>

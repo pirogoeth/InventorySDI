@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.Date;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public class Audit {
@@ -56,18 +56,18 @@ public class Audit {
     private final SimpleIntegerProperty id = new SimpleIntegerProperty();
     private final SimpleStringProperty recordType = new SimpleStringProperty();
     private final SimpleIntegerProperty recordId = new SimpleIntegerProperty();
-    private final SimpleObjectProperty<LocalDate> creationDate = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<LocalDateTime> creationDate = new SimpleObjectProperty<>();
     private final SimpleStringProperty entryMsg = new SimpleStringProperty();
 
     public Audit() {
         this.id.set(-1);
         this.recordType.set("");
         this.recordId.set(-1);
-        this.creationDate.set(LocalDate.now());
+        this.creationDate.set(LocalDateTime.now());
         this.entryMsg.set("");
     }
 
-    public Audit(String recType, int recId, LocalDate creation, String entry) {
+    public Audit(String recType, int recId, LocalDateTime creation, String entry) {
         this.recordType.set(recType);
         this.recordId.set(recId);
         this.creationDate.set(creation);
@@ -75,19 +75,19 @@ public class Audit {
     }
 
     public Audit(String recType, int recId, String entry) {
-        this(recType, recId, LocalDate.now(), entry);
+        this(recType, recId, LocalDateTime.now(), entry);
     }
 
     public Audit(Auditable auditable, String eventType) {
         this(
             auditable.auditRecordType(),
             auditable.auditRecordId(),
-            LocalDate.now(),
+            LocalDateTime.now(),
             String.format("%s: %s", eventType, auditable.auditString())
         );
     }
 
-    public Audit(Auditable auditable, LocalDate creation, String eventType) {
+    public Audit(Auditable auditable, LocalDateTime creation, String eventType) {
         this(auditable, eventType);
 
         this.creationDate.set(creation);
@@ -125,7 +125,7 @@ public class Audit {
         return this.recordId;
     }
 
-    public Property<LocalDate> creationDateProperty() {
+    public Property<LocalDateTime> creationDateProperty() {
         return this.creationDate;
     }
 
@@ -161,11 +161,11 @@ public class Audit {
         this.recordId.set(id);
     }
 
-    public LocalDate getEntryDate() {
+    public LocalDateTime getEntryDate() {
         return this.creationDate.get();
     }
 
-    public void setEntryDate(LocalDate d) {
+    public void setEntryDate(LocalDateTime d) {
         this.creationDate.set(d);
     }
 
@@ -173,7 +173,7 @@ public class Audit {
      * @param d Date
      */
     public void setEntryDate(Date d) {
-        this.setEntryDate(Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate());
+        this.setEntryDate(Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
     public String getEntryMessage() {

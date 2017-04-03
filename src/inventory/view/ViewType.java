@@ -18,6 +18,8 @@ public enum ViewType {
     AUTHOR_DETAIL(Res.author_detailed, AuthorDetail.class),
     BOOK_LIST(Res.book_list, BookList.class),
     BOOK_DETAIL(Res.book_detailed, BookDetail.class),
+    LIBRARY_LIST(Res.library_list, LibraryList.class),
+    LIBRARY_DETAIL(Res.library_detailed, LibraryDetail.class),
     WAITING_PANE(Res.waiting_pane, WaitingPane.class),
     AUDIT_VIEW(Res.audit_log, AuditView.class);
 

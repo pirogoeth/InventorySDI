@@ -64,8 +64,9 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
     public boolean create(Book model) {
         String query = "INSERT INTO `book` (" +
-            "  `title`, `publisher`, `date_published`, `summary`, `author_id`)" +
-            "  VALUES (?, ?, ?, ?, ?);";
+            "  `title`, `publisher`, `date_published`, `summary`, `author_id`" +
+            ")" +
+            "  VALUES (?, ?, ?, ?, ?)";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -205,7 +206,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     }
 
     public Book findById(int id) {
-        String query = "SELECT * FROM `book` WHERE id=?;";
+        String query = "SELECT * FROM `book` WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);

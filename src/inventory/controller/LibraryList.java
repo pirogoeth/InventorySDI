@@ -2,8 +2,8 @@ package inventory.controller;
 
 import inventory.event.Event;
 import inventory.event.EventType;
-import inventory.models.Author;
-import inventory.sql.AuthorQuery;
+import inventory.models.Library;
+import inventory.sql.LibraryQuery;
 import inventory.util.Reflect;
 import inventory.view.ViewManager;
 import inventory.view.ViewManager.ViewState;
@@ -21,24 +21,27 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AuthorList extends EventedClickHandler implements Initializable {
+public class LibraryList extends EventedClickHandler implements Initializable {
 
-    private static Logger LOG = LogManager.getLogger(AuthorList.class);
-    private static AuthorList instance = null;
+    private static Logger LOG = LogManager.getLogger(LibraryList.class);
+    private static LibraryList instance = null;
 
-    public static AuthorList getInstance() {
+    public static LibraryList getInstance() {
         return instance;
     }
 
-    @FXML private ListView<Author> authorList;
+    @FXML
+    private ListView<Library> libraryList;
 
     private final ViewManager viewMgr = ViewManager.getInstance();
-    private final SimpleListProperty<Author> authorsProperty = new SimpleListProperty<>();
+    private final SimpleListProperty<Library> librariesProperty = new SimpleListProperty<>();
 
     /**
      * Create author list controller and set up singleton
      */
-    public AuthorList() {
+    public LibraryList() {
+        super();
+
         instance = this;
 
         this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
@@ -53,30 +56,30 @@ public class AuthorList extends EventedClickHandler implements Initializable {
      *
      * @param evt MouseEvent
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     protected void handleDoubleClick(MouseEvent evt) throws IOException {
-        LOG.debug("ListView controller handling double-click event");
+        LOG.debug("LibraryList controller handling double-click event");
 
         // CONSUME IT ALL
         evt.consume();
 
         // Get the Author object
-        ListView<Author> authorList = (ListView<Author>) evt.getSource();
-        Author clicked = authorList.getSelectionModel().getSelectedItem();
-        LOG.debug("Open detail pane for author - " + clicked);
+        ListView<Library> libList = (ListView<Library>) evt.getSource();
+        Library clicked = libList.getSelectionModel().getSelectedItem();
+        LOG.debug("Open detail pane for library - " + clicked);
 
         // Load the detail pane
-        LOG.info("Loading author detail");
-        if ( this.viewMgr.initView(ViewType.AUTHOR_DETAIL, clicked) ) {
+        LOG.info("Loading library detail");
+        if ( this.viewMgr.initView(ViewType.LIBRARY_DETAIL, clicked) ) {
             Reflect.unsafeOneShot(
-                ViewType.AUTHOR_DETAIL.getController(),
+                ViewType.LIBRARY_DETAIL.getController(),
                 "setModified",
                 false
             );
             this.viewMgr.modifyViewState((viewState) ->
                 new ViewState(
-                    ViewType.AUTHOR_LIST.getViewInst(),
-                    ViewType.AUTHOR_DETAIL.getViewInst()
+                    ViewType.LIBRARY_LIST.getViewInst(),
+                    ViewType.LIBRARY_DETAIL.getViewInst()
                 )
             );
         }
@@ -88,21 +91,21 @@ public class AuthorList extends EventedClickHandler implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Get the list of authors from the database
-        this.authorList.itemsProperty().bindBidirectional(this.authorsProperty);
-        this.populateAuthorList();
+        this.libraryList.itemsProperty().bindBidirectional(this.librariesProperty);
+        this.populateLibraryList();
     }
 
-    private void populateAuthorList() {
-        LOG.debug("Loading authors list from AuthorQuery gateway");
-        ObservableList<Author> authors = AuthorQuery.getInstance().findAll();
-        this.authorsProperty.set(authors);
+    private void populateLibraryList() {
+        LOG.debug("Loading library list from LibraryQuery gateway");
+        ObservableList<Library> libs = LibraryQuery.getInstance().findAll();
+        this.librariesProperty.set(libs);
     }
 
     @Override
     public void receiveEvent(Event ev) {
         if ( ev.getEventType() == EventType.VIEW_REFRESH ) {
-            LOG.debug("Got VIEW_REFRESH, reloading author data!");
-            this.populateAuthorList();
+            LOG.debug("Got VIEW_REFRESH, reloading library data!");
+            this.populateLibraryList();
         }
     }
 }

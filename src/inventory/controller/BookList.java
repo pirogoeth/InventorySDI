@@ -1,7 +1,6 @@
 package inventory.controller;
 
 import inventory.event.Event;
-import inventory.event.EventReceiver;
 import inventory.event.EventType;
 import inventory.models.Book;
 import inventory.sql.BookQuery;
@@ -22,7 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class BookList extends EventReceiver implements Initializable {
+public class BookList extends EventedClickHandler implements Initializable {
 
     private static Logger LOG = LogManager.getLogger(BookList.class);
     private static BookList instance = null;
@@ -46,19 +45,8 @@ public class BookList extends EventReceiver implements Initializable {
         this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
     }
 
-    @FXML
-    public void handleItemClicked(MouseEvent evt) {
-        switch ( evt.getClickCount() ) {
-            case 2:
-                try {
-                    this.handleDoubleClick(evt);
-                } catch ( IOException e ) {
-                    LOG.catching(e);
-                }
-                break;
-            default:
-                break;
-        }
+    protected void handleSingleClick(MouseEvent evt) throws IOException {
+        return;
     }
 
     /**
@@ -67,7 +55,7 @@ public class BookList extends EventReceiver implements Initializable {
      * @param evt MouseEvent
      */
     @SuppressWarnings( "unchecked" )
-    private void handleDoubleClick(MouseEvent evt) throws IOException {
+    protected void handleDoubleClick(MouseEvent evt) throws IOException {
         LOG.debug("ListView controller handling double-click event");
 
         // CONSUME IT ALL

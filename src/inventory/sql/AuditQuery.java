@@ -110,7 +110,7 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
             "record_type=?," +
             "record_id=?," +
             "date_added=?," +
-            "entry_msg=?," +
+            "entry_msg=?" +
             "WHERE id=?";
 
         try {
@@ -199,7 +199,7 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
     }
 
     public Audit findById(int id) {
-        String query = "SELECT * FROM `audit_log` WHERE id=?;";
+        String query = "SELECT * FROM `audit_log` WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -212,12 +212,13 @@ public class AuditQuery extends Connector implements IQueryBase<Audit> {
             } else {
                 // Now at the first row -- id is primary, unique, so only one row max
                 // will be returned.
-                Audit a = new Audit();
+                Audit a = new Audit(
+                    r.getString("record_type"),
+                    r.getInt("record_id"),
+                    r.getTimestamp("date_added").toLocalDateTime(),
+                    r.getString("entry_msg")
+                );
                 a.setId(r.getInt("id"));
-                a.setRecordType(r.getString("record_type"));
-                a.setRecordId(r.getInt("record_id"));
-                a.setEntryDate(r.getDate("date_added"));
-                a.setEntryMessage(r.getString("entry_msg"));
                 return a;
             }
         } catch (SQLException ex) {

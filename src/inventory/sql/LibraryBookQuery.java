@@ -1,7 +1,7 @@
 package inventory.sql;
 
 import com.mysql.jdbc.Statement;
-import inventory.models.Author;
+import inventory.models.LibraryBook;
 import inventory.util.Sql;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,66 +10,71 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AuthorQuery extends Connector implements IQueryBase<Author> {
+public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBook> {
 
     /**
      * Static connector instance
      */
-    protected static AuthorQuery instance = null;
+    protected static LibraryBookQuery instance = null;
 
-    public static AuthorQuery getInstance() {
+    public static LibraryBookQuery getInstance() {
         return instance;
     }
 
-    public AuthorQuery() {
+    public LibraryBookQuery() {
         instance = this;
     }
 
     public void createTable() {
-        String query = "CREATE TABLE IF NOT EXISTS `author` (" +
-            "  `id` int(11) NOT NULL AUTO_INCREMENT," +
-            "  `first_name` varchar(100) NOT NULL," +
-            "  `last_name` varchar(100) NOT NULL," +
-            "  `dob` date NOT NULL," +
-            "  `gender` char(1) DEFAULT NULL," +
-            "  `web_site` varchar(100) DEFAULT NULL," +
-            "  `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
-            "  PRIMARY KEY (`id`)" +
-            ") ";
+        // Create the library-book junction
+        String query = "CREATE TABLE IF NOT EXISTS `library_book` (" +
+                "   `id` int(11) NOT NULL AUTO_INCREMENT," +
+                "   `library_id` int(11) NOT NULL," +
+                "   `book_id` int(11) NOT NULL," +
+                "   `quantity` int(11) NOT NULL," +
+                "   `last_modified` timestamp DEFAULT CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)," +
+                "  FOREIGN KEY (`library_id`) REFERENCES library(`id`)" +
+                "       ON DELETE CASCADE" +
+                "       ON UPDATE CASCADE," +
+                "  FOREIGN KEY (`book_id`) REFERENCES book(`id`)" +
+                "       ON DELETE CASCADE" +
+                "       ON UPDATE CASCADE" +
+                ")";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.executeUpdate();
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not create `author` table!");
+            LOG.warn("Could not create `library_book` table!");
             LOG.catching(ex);
         }
 
-        String triggerQuery = "CREATE TRIGGER `updateLastModifiedTS` BEFORE UPDATE ON `author` " +
-            "   FOR EACH ROW SET NEW.last_modified = CURRENT_TIMESTAMP()";
+        // Create an update-last-modified trigger on normal table
+        String triggerQuery = "CREATE TRIGGER `libbook_updateLastModifiedTS` BEFORE UPDATE ON `library_book` " +
+                "   FOR EACH ROW SET NEW.last_modified = CURRENT_TIMESTAMP()";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(triggerQuery);
             stmt.executeUpdate();
         } catch ( SQLException ex ) {
             // Could not create the trigger - maybe it already exists?
-            LOG.warn("Could not create trigger `updateLastModifiedTS` - maybe it already exists?");
+            LOG.warn("Could not create trigger `library_book/libbook_updateLastModifiedTS` - maybe it already exists?");
         }
     }
 
-    public boolean create(Author model) {
-        String query = "INSERT INTO `author` (" +
-            "`first_name`, `last_name`, `dob`, `gender`, `web_site`)" +
-            "VALUES (?, ?, ?, ?, ?);";
+    public boolean create(LibraryBook model) {
+        String query = "INSERT INTO `library_book` (" +
+                "    `library_id`, `book_id`, `quantity`" +
+                "  )" +
+                "  VALUES (?, ?, ?)";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, model.getFirstName());
-            stmt.setString(2, model.getLastName());
-            stmt.setObject(3, model.getBirthDate());
-            stmt.setString(4, String.valueOf(model.getGender().asChar()));
-            stmt.setString(5, model.getSiteUrl());
+            stmt.setInt(1, model.getLibraryId());
+            stmt.setInt(2, model.getBookId());
+            stmt.setInt(3, model.getQuantity());
 
             if ( stmt.executeUpdate() == 0 ) {
                 // Insert failed! :(
@@ -85,7 +90,14 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
             return true;
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not insert into `author` table!");
+            LOG.warn("Could not insert into `library_book` table!");
+            LOG.catching(ex);
+        }
+
+        try {
+            conn.rollback();
+        } catch ( SQLException ex ) {
+            LOG.warn("Error while rolling back transaction");
             LOG.catching(ex);
         }
 
@@ -94,23 +106,18 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
         return false;
     }
 
-    public boolean update(Author model) {
-        String query = "UPDATE `author` SET " +
-            "first_name=?," +
-            "last_name=?," +
-            "dob=?," +
-            "gender=?," +
-            "web_site=?" +
-            "WHERE id=?";
+    public boolean update(LibraryBook model) {
+        String query = "UPDATE `library_book` SET " +
+                "  author_id=?," +
+                "  book_id=?," +
+                "  quantity=?" +
+                "  WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, model.getFirstName());
-            stmt.setString(2, model.getLastName());
-            stmt.setObject(3, model.getBirthDate());
-            stmt.setString(4, String.valueOf(model.getGender().asChar()));
-            stmt.setString(5, model.getSiteUrl());
-            stmt.setInt(6, model.getId());
+            stmt.setInt(1, model.getLibraryId());
+            stmt.setInt(2, model.getBookId());
+            stmt.setInt(3, model.getQuantity());
 
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
@@ -119,7 +126,7 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not insert into `author` table!");
+            LOG.warn("Could not update `library_book` table!");
             LOG.catching(ex);
         }
 
@@ -133,9 +140,9 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
         return false;
     }
 
-    public boolean delete(Author model) {
+    public boolean delete(LibraryBook model) {
         // Only need to use the model's id for the delete
-        String query = "DELETE FROM `author` WHERE id=?";
+        String query = "DELETE FROM `library_book` WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -147,10 +154,10 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
                 conn.commit();
                 return true;
             }
-            LOG.info("delete() did not return 1 -- no rows affected?");
+            LOG.warn("delete() did not return 1 -- no rows affected?");
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not delete from `author` table!");
+            LOG.warn("Could not delete from `library_book` table!");
             LOG.catching(ex);
         }
 
@@ -164,35 +171,35 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
         return false;
     }
 
-    public ObservableList<Author> findAll() {
-        String query = "SELECT * FROM `author`;";
-        ObservableList<Author> all = FXCollections.observableArrayList();
+    public ObservableList<LibraryBook> findAll() {
+        String query = "SELECT * FROM `library_book`;";
+        ObservableList<LibraryBook> all = FXCollections.observableArrayList();
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet r = stmt.executeQuery();
 
             while ( r.next() ) {
-                Author a = new Author();
-                a.setId(r.getInt("id"));
-                a.setFirstName(r.getString("first_name"));
-                a.setLastName(r.getString("last_name"));
-                a.setBirthDate(r.getDate("dob"));
-                a.setGender(Author.Gender.fromChar(r.getString("gender").charAt(0)));
-                a.setSiteUrl(r.getString("web_site"));
-                all.add(a);
+                LibraryBook lb = new LibraryBook(
+                        r.getInt("id"),
+                        r.getInt("book_id"),
+                        r.getInt("library_id"),
+                        r.getInt("quantity"),
+                        r.getTimestamp("last_modified").toLocalDateTime()
+                );
+                all.add(lb);
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not select on `author` table!");
+            LOG.warn("Could not select on `library_book` table!");
             LOG.catching(ex);
         }
 
         return all;
     }
 
-    public Author findById(int id) {
-        String query = "SELECT * FROM `author` WHERE id=?";
+    public LibraryBook findById(int id) {
+        String query = "SELECT * FROM `library_book` WHERE id=?";
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -205,20 +212,19 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
             } else {
                 // Now at the first row -- id is primary, unique, so only one row max
                 // will be returned.
-                Author a = new Author(
-                    r.getInt("id"),
-                    r.getString("first_name"),
-                    r.getString("last_name"),
-                    Author.Gender.fromChar(r.getString("gender").charAt(0)),
-                    r.getDate("dob"),
-                    r.getString("web_site")
+                LibraryBook lb = new LibraryBook(
+                        r.getInt("id"),
+                        r.getInt("book_id"),
+                        r.getInt("library_id"),
+                        r.getInt("quantity"),
+                        r.getTimestamp("last_modified").toLocalDateTime()
                 );
 
-                return a;
+                return lb;
             }
         } catch (SQLException ex) {
             // Could not create the prepared statement?
-            LOG.warn("Could not select on `author` table!");
+            LOG.warn("Could not select on `library_book` table!");
             LOG.catching(ex);
         }
 
@@ -228,3 +234,5 @@ public class AuthorQuery extends Connector implements IQueryBase<Author> {
     }
 
 }
+
+

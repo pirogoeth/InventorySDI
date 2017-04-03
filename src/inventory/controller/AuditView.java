@@ -6,6 +6,7 @@ import inventory.event.EventType;
 import inventory.models.Audit;
 import inventory.models.Author;
 import inventory.models.Book;
+import inventory.models.Library;
 import inventory.sql.AuditQuery;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -28,11 +29,14 @@ public class AuditView extends EventReceiver implements Initializable {
 
     private final SimpleListProperty<Audit> authorAuditsProperty = new SimpleListProperty<>();
     private final SimpleListProperty<Audit> bookAuditsProperty = new SimpleListProperty<>();
+    private final SimpleListProperty<Audit> libraryAuditsProperty = new SimpleListProperty<>();
 
     @FXML private Label authorAuditLabel;
     @FXML private ListView authorAuditList;
     @FXML private Label bookAuditLabel;
     @FXML private ListView bookAuditList;
+    @FXML private Label libraryAuditLabel;
+    @FXML private ListView libraryAuditList;
 
     public AuditView() {
         this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
@@ -46,11 +50,15 @@ public class AuditView extends EventReceiver implements Initializable {
         this.bookAuditLabel.textProperty().set("Audit Stream - All Books");
         this.bookAuditList.itemsProperty().bindBidirectional(this.bookAuditsProperty);
 
+        this.libraryAuditLabel.textProperty().set("Audit Stream - All Libraries");
+        this.libraryAuditList.itemsProperty().bindBidirectional(this.libraryAuditsProperty);
+
         this.populateAuditsList();
     }
 
     private void populateAuditsList() {
         ObservableList<Audit> audits = AuditQuery.getInstance().findAll();
+
         this.authorAuditsProperty.set(
             audits.stream()
                 .filter(a -> a.getRecordType().equals(Author.REC_TYPE))
@@ -59,6 +67,11 @@ public class AuditView extends EventReceiver implements Initializable {
         this.bookAuditsProperty.set(
             audits.stream()
                 .filter(a -> a.getRecordType().equals(Book.REC_TYPE))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList))
+        );
+        this.libraryAuditsProperty.set(
+            audits.stream()
+                .filter(a -> a.getRecordType().equals(Library.REC_TYPE))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList))
         );
     }
