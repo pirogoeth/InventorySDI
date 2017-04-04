@@ -9,8 +9,12 @@ import javafx.collections.ObservableList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBook> {
+public class LibraryBookQuery extends CachingConnector<LibraryBook> implements IQueryBase<LibraryBook> {
 
     /**
      * Static connector instance
@@ -87,6 +91,8 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
 
             conn.commit();
 
+            this.cacheItem(model);
+
             return true;
         } catch (SQLException ex) {
             // Could not create the prepared statement?
@@ -108,7 +114,7 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
 
     public boolean update(LibraryBook model) {
         String query = "UPDATE `library_book` SET " +
-                "  author_id=?," +
+                "  library_id=?," +
                 "  book_id=?," +
                 "  quantity=?" +
                 "  WHERE id=?";
@@ -118,10 +124,14 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
             stmt.setInt(1, model.getLibraryId());
             stmt.setInt(2, model.getBookId());
             stmt.setInt(3, model.getQuantity());
+            stmt.setInt(4, model.getId());
 
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
                 conn.commit();
+
+                this.invalidate();
+
                 return true;
             }
         } catch (SQLException ex) {
@@ -151,7 +161,12 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
                 // Delete success!
                 // Unset the model's id.
                 model.setId(-1);
+
                 conn.commit();
+
+                // Invalidate the cache.
+                this.invalidate();
+
                 return true;
             }
             LOG.warn("delete() did not return 1 -- no rows affected?");
@@ -172,8 +187,45 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
     }
 
     public ObservableList<LibraryBook> findAll() {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findAll();
+        } else {
+            return this.stream()
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+    }
+
+    public LibraryBook findById(int id) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findById(id);
+        } else {
+            try {
+                return this.filter(lb -> lb.getId() == id).findFirst().get();
+            } catch (NoSuchElementException e) {
+                return null;
+            }
+        }
+    }
+
+    public Stream<LibraryBook> findWithPredicate(Predicate<LibraryBook> pred) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findWithPredicate(pred);
+        } else {
+            try {
+                return this.filter(pred);
+            } catch (Exception ex) {
+                LOG.catching(ex);
+                return null;
+            }
+        }
+    }
+
+    protected void updateCache() {
         String query = "SELECT * FROM `library_book`;";
-        ObservableList<LibraryBook> all = FXCollections.observableArrayList();
+        List<LibraryBook> all = new ArrayList<>();
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -195,42 +247,7 @@ public class LibraryBookQuery extends Connector implements IQueryBase<LibraryBoo
             LOG.catching(ex);
         }
 
-        return all;
-    }
-
-    public LibraryBook findById(int id) {
-        String query = "SELECT * FROM `library_book` WHERE id=?";
-
-        try {
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, id);
-            ResultSet r = stmt.executeQuery();
-
-            if ( !r.first() ) {
-                // No results -- no match
-                return null;
-            } else {
-                // Now at the first row -- id is primary, unique, so only one row max
-                // will be returned.
-                LibraryBook lb = new LibraryBook(
-                        r.getInt("id"),
-                        r.getInt("book_id"),
-                        r.getInt("library_id"),
-                        r.getInt("quantity"),
-                        r.getTimestamp("last_modified").toLocalDateTime()
-                );
-
-                return lb;
-            }
-        } catch (SQLException ex) {
-            // Could not create the prepared statement?
-            LOG.warn("Could not select on `library_book` table!");
-            LOG.catching(ex);
-        }
-
-        // If something is not returned already, it's likely something went horribly wrong.
-        LOG.error("findById() well out of try/catch - something went wrong?");
-        return null;
+        this.setCache(all);
     }
 
 }

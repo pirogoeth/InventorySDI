@@ -1,14 +1,15 @@
 package inventory.models;
 
+import inventory.sql.LibraryBookQuery;
 import inventory.sql.LibraryQuery;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 public class Library implements Auditable, OptimisticLocked, Reloadable {
 
@@ -51,6 +52,8 @@ public class Library implements Auditable, OptimisticLocked, Reloadable {
     private final SimpleIntegerProperty id = new SimpleIntegerProperty();
     private final SimpleStringProperty name = new SimpleStringProperty();
     private final SimpleObjectProperty<LocalDateTime> lastModified = new SimpleObjectProperty<>();
+
+    private final SimpleListProperty<LibraryBook> books = new SimpleListProperty<>();
 
     public Library() {
         this.setId(-1);
@@ -126,10 +129,28 @@ public class Library implements Auditable, OptimisticLocked, Reloadable {
      */
     private void loadBooks() {
         // This code should load a list of books from the library junction.
+        if ( this.getId() == -1 ) {
+            return;
+        }
+
+        // Since we're caching... :)
+        ObservableList<LibraryBook> books = LibraryBookQuery.getInstance().findAll().stream()
+                .filter(book -> book.getLibraryId() == this.getId())
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+
+        if ( books == null ) {
+            LOG.warn(
+                    "No books attached to library? [%s]",
+                    this
+            );
+            books = FXCollections.emptyObservableList();
+        }
+
+        this.books.set(books);
     }
 
     private void saveBooks() {
-        // This code should save a list of books to the library junction.
+        // This is a no-op.
     }
 
     /*
@@ -188,6 +209,10 @@ public class Library implements Auditable, OptimisticLocked, Reloadable {
 
     public Property<LocalDateTime> lastModifiedProperty() {
         return this.lastModified;
+    }
+
+    public Property<ObservableList<LibraryBook>> booksListProperty() {
+        return this.books;
     }
 
     /*

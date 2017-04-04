@@ -9,8 +9,10 @@ import javafx.collections.ObservableList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class LibraryQuery extends Connector implements IQueryBase<Library> {
+public class LibraryQuery extends CachingConnector<Library> implements IQueryBase<Library> {
 
     /**
      * Static connector instance
@@ -58,7 +60,8 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
 
     public boolean create(Library model) {
         String query = "INSERT INTO `library` (" +
-                "  `name`)" +
+                "  `name`" +
+                ")" +
                 "  VALUES (?);";
 
         try {
@@ -75,6 +78,8 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
             model.setId(creationId);
 
             conn.commit();
+
+            this.cacheItem(model);
 
             return true;
         } catch (SQLException ex) {
@@ -108,6 +113,9 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
                 conn.commit();
+
+                this.invalidate();
+
                 return true;
             }
         } catch (SQLException ex) {
@@ -137,7 +145,11 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
                 // Delete success!
                 // Unset the model's id.
                 model.setId(-1);
+
                 conn.commit();
+
+                this.invalidate();
+
                 return true;
             }
             LOG.warn("delete() did not return 1 -- no rows affected?");
@@ -158,8 +170,31 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
     }
 
     public ObservableList<Library> findAll() {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findAll();
+        } else {
+            return this.stream()
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+    }
+
+    public Library findById(int id) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findById(id);
+        } else {
+            try {
+                return this.filter(l -> l.getId() == id).findFirst().get();
+            } catch (NoSuchElementException e) {
+                return null;
+            }
+        }
+    }
+
+    protected void updateCache() {
         String query = "SELECT * FROM `library`;";
-        ObservableList<Library> all = FXCollections.observableArrayList();
+        List<Library> all = new ArrayList<>();
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -179,40 +214,7 @@ public class LibraryQuery extends Connector implements IQueryBase<Library> {
             LOG.catching(ex);
         }
 
-        return all;
-    }
-
-    public Library findById(int id) {
-        String query = "SELECT * FROM `library` WHERE id=?";
-
-        try {
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, id);
-            ResultSet r = stmt.executeQuery();
-
-            if ( !r.first() ) {
-                // No results -- no match
-                return null;
-            } else {
-                // Now at the first row -- id is primary, unique, so only one row max
-                // will be returned.
-                Library l = new Library(
-                        r.getInt("id"),
-                        r.getString("name"),
-                        r.getTimestamp("last_modified").toLocalDateTime()
-                );
-
-                return l;
-            }
-        } catch (SQLException ex) {
-            // Could not create the prepared statement?
-            LOG.warn("Could not select on `library` table!");
-            LOG.catching(ex);
-        }
-
-        // If something is not returned already, it's likely something went horribly wrong.
-        LOG.error("findById() well out of try/catch - something went wrong?");
-        return null;
+        this.setCache(all);
     }
 
 }

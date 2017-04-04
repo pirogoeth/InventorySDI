@@ -6,6 +6,7 @@ import inventory.sql.LibraryQuery;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -50,12 +51,26 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
     private final SimpleObjectProperty<Library> library = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<Book> book = new SimpleObjectProperty<>();
 
+    private final SimpleStringProperty bookName = new SimpleStringProperty();
+    private final SimpleStringProperty libraryName = new SimpleStringProperty();
+
     public LibraryBook() {
         this.setId(-1);
         this.setBookId(-1);
         this.setLibraryId(-1);
         this.setQuantity(-1);
         this.setLastModifiedDate(LocalDateTime.now());
+    }
+
+    public LibraryBook(int bookId, int libraryId, int quantity) {
+        this();
+
+        this.setBookId(bookId);
+        this.setLibraryId(libraryId);
+        this.setQuantity(quantity);
+
+        this.loadBook();
+        this.loadLibrary();
     }
 
     public LibraryBook(int id, int bookId, int libraryId, int quantity, LocalDateTime lastModified) {
@@ -147,6 +162,7 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
         }
 
         this.book.set(b);
+        this.bookName.bindBidirectional(b.titleProperty());
     }
 
     private void saveBook() {
@@ -175,6 +191,7 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
         }
 
         this.library.set(l);
+        this.libraryName.bindBidirectional(l.nameProperty());
     }
 
     private void saveLibrary() {
@@ -202,6 +219,14 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
             throw new IllegalArgumentException("can not modify LibraryBook - lock check failed!");
         }
 
+        if ( !Validate.id(this.getBookId()) ) {
+            throw new IllegalArgumentException("bookId must be greater than 0");
+        }
+
+        if ( !Validate.id(this.getLibraryId()) ) {
+            throw new IllegalArgumentException("libraryId must be greater than 0");
+        }
+
         // If id == -1, this is a create. Otherwise, it's an update.
         if ( this.getId() == -1 ) {
             LOG.debug(String.format("Executing creation query for LibraryBook '%s'", this));
@@ -210,14 +235,6 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
         } else {
             if ( !Validate.id(this.getId()) ) {
                 throw new IllegalArgumentException("id must be greater than 0");
-            }
-
-            if ( !Validate.id(this.getBookId()) ) {
-                throw new IllegalArgumentException("bookId must be greater than 0");
-            }
-
-            if ( !Validate.id(this.getLibraryId()) ) {
-                throw new IllegalArgumentException("libraryId must be greater than 0");
             }
 
             LOG.debug(String.format("Executing update query for LibraryBook '%s'", this));
@@ -254,6 +271,14 @@ public class LibraryBook implements Auditable, OptimisticLocked, Reloadable {
 
     public Property<LocalDateTime> lastModifiedProperty() {
         return this.lastModified;
+    }
+
+    public Property<String> bookNameProperty() {
+        return this.bookName;
+    }
+
+    public Property<String> libraryNameProperty() {
+        return this.libraryName;
     }
 
     /*

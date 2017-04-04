@@ -129,11 +129,6 @@ public class BookDetail extends EventReceiver implements Initializable, ContentM
         this.summaryField.textProperty().bindBidirectional(this.currentBook.summaryProperty());
         this.authorField.valueProperty().bindBidirectional(this.currentBook.authorObjectProperty());
 
-        boolean authorsHas = authorList.contains(this.currentBook.getAuthor());
-        System.out.println("Author list contains current: " + authorsHas);
-
-        this.authorField.getSelectionModel().select(1);
-
         // Update the deletion button state
         this.updateDeleteState();
     }

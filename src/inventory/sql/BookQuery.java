@@ -9,8 +9,12 @@ import javafx.collections.ObservableList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class BookQuery extends Connector implements IQueryBase<Book> {
+public class BookQuery extends CachingConnector<Book> implements IQueryBase<Book> {
 
     /**
      * Static connector instance
@@ -87,6 +91,8 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
             conn.commit();
 
+            this.cacheItem(model);
+
             return true;
         } catch (SQLException ex) {
             // Could not create the prepared statement?
@@ -127,6 +133,10 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
             if ( stmt.executeUpdate() == 1 ) {
                 // 1 row modified, PERFECT!
                 conn.commit();
+
+                // Invalidate the cache.
+                this.invalidate();
+
                 return true;
             }
         } catch (SQLException ex) {
@@ -156,7 +166,12 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
                 // Delete success!
                 // Unset the model's id.
                 model.setId(-1);
+
                 conn.commit();
+
+                // Invalidate the cache.
+                this.invalidate();
+
                 return true;
             }
             LOG.warn("delete() did not return 1 -- no rows affected?");
@@ -177,8 +192,45 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
     }
 
     public ObservableList<Book> findAll() {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findAll();
+        } else {
+            return this.stream()
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        }
+    }
+
+    public Book findById(int id) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findById(id);
+        } else {
+            try {
+                return this.filter(b -> b.getId() == id).findFirst().get();
+            } catch (NoSuchElementException e) {
+                return null;
+            }
+        }
+    }
+
+    public Stream<Book> findWithPredicate(Predicate<Book> pred) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.findWithPredicate(pred);
+        } else {
+            try {
+                return this.filter(pred);
+            } catch (Exception ex) {
+                LOG.catching(ex);
+                return null;
+            }
+        }
+    }
+
+    protected void updateCache() {
         String query = "SELECT * FROM `book`;";
-        ObservableList<Book> all = FXCollections.observableArrayList();
+        List<Book> all = new ArrayList<>();
 
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -186,13 +238,13 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
 
             while ( r.next() ) {
                 Book b = new Book(
-                    r.getInt("id"),
-                    r.getString("title"),
-                    r.getString("publisher"),
-                    r.getDate("date_published"),
-                    r.getString("summary"),
-                    r.getInt("author_id"),
-                    r.getTimestamp("last_modified").toLocalDateTime()
+                        r.getInt("id"),
+                        r.getString("title"),
+                        r.getString("publisher"),
+                        r.getDate("date_published"),
+                        r.getString("summary"),
+                        r.getInt("author_id"),
+                        r.getTimestamp("last_modified").toLocalDateTime()
                 );
                 all.add(b);
             }
@@ -202,44 +254,7 @@ public class BookQuery extends Connector implements IQueryBase<Book> {
             LOG.catching(ex);
         }
 
-        return all;
-    }
-
-    public Book findById(int id) {
-        String query = "SELECT * FROM `book` WHERE id=?";
-
-        try {
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, id);
-            ResultSet r = stmt.executeQuery();
-
-            if ( !r.first() ) {
-                // No results -- no match
-                return null;
-            } else {
-                // Now at the first row -- id is primary, unique, so only one row max
-                // will be returned.
-                Book b = new Book(
-                    r.getInt("id"),
-                    r.getString("title"),
-                    r.getString("publisher"),
-                    r.getDate("date_published"),
-                    r.getString("summary"),
-                    r.getInt("author_id"),
-                    r.getTimestamp("last_modified").toLocalDateTime()
-                );
-
-                return b;
-            }
-        } catch (SQLException ex) {
-            // Could not create the prepared statement?
-            LOG.warn("Could not select on `book` table!");
-            LOG.catching(ex);
-        }
-
-        // If something is not returned already, it's likely something went horribly wrong.
-        LOG.error("findById() well out of try/catch - something went wrong?");
-        return null;
+        this.setCache(all);
     }
 
 }

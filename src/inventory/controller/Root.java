@@ -95,7 +95,7 @@ public class Root extends EventReceiver implements Initializable {
                     Quick.dispatchModelReload(this);
                     return;
                 }
-            } else if ( this.viewMgr.viewIsActive(ViewType.LIBRARY_DETAIL) && ViewType.AUTHOR_DETAIL.isContentModified() ) {
+            } else if ( this.viewMgr.viewIsActive(ViewType.LIBRARY_DETAIL) && ViewType.LIBRARY_DETAIL.isContentModified() ) {
                 if ( !this.ensureDetailsSaved() ) {
                     Quick.dispatchModelReload(this);
                     return;
