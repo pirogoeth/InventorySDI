@@ -15,81 +15,81 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * CS 4743 Assignment 3 by Sean Johnson
+ * CS 4743 Assignment 5 by Sean Johnson
  *
  * @author Sean Johnson <isr830@my.utsa.edu>
  */
 public class InventoryMain extends Application {
 
-	// Root logger for the application
-	private static Logger LOG = LogManager.getLogger(InventoryMain.class);
+    // Root logger for the application
+    private static Logger LOG = LogManager.getLogger(InventoryMain.class);
 
-	// Singleton instance
-	private static InventoryMain instance = null;
+    // Singleton instance
+    private static InventoryMain instance = null;
 
-	public static InventoryMain getInstance() {
-		return instance;
-	}
-
-	private Stage rootStage;
-
-	/**
-	 * Public getter for the root pane.
-	 *
-	 * @return BorderPane
-	 */
-	public BorderPane getRootPane() {
-		return (BorderPane) ViewType.ROOT.getViewInst();
-	}
-
-	/**
-	 * Public getter for the root stage.
-     *
-     * @return Stage
-	 */
-	public Stage getRootStage() {
-	    return this.rootStage;
+    public static InventoryMain getInstance() {
+        return instance;
     }
 
-	public static void main(String[] args) {
-		launch(args);
-	}
+    private Stage rootStage;
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		instance = this;
+    /**
+     * Public getter for the root pane.
+     *
+     * @return BorderPane
+     */
+    public BorderPane getRootPane() {
+        return (BorderPane) ViewType.ROOT.getViewInst();
+    }
 
-		// Load the application properties file
-		InventoryProps.getInstance();
+    /**
+     * Public getter for the root stage.
+     *
+     * @return Stage
+     */
+    public Stage getRootStage() {
+        return this.rootStage;
+    }
 
-		// Initialize the FXML loader
-		LOG.debug("Loading root FX view..");
+    public static void main(String[] args) {
+        launch(args);
+    }
 
-		this.rootStage = primaryStage;
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        instance = this;
 
-		// Change to the root RXML view
-		ViewManager.getInstance().initView(ViewType.ROOT, null);
+        // Load the application properties file
+        InventoryProps.getInstance();
 
-		// Attach the view to a scene
-		Scene rootScene = new Scene(ViewType.ROOT.getViewInst());
+        // Initialize the FXML loader
+        LOG.debug("Loading root FX view..");
 
-		// Attach scene to the stage
-		primaryStage.setScene(rootScene);
-		primaryStage.setTitle("Section 002 Assignment 3");
-		primaryStage.show();
+        this.rootStage = primaryStage;
 
-		// Initialize the database connector..
-		Platform.runLater(() -> {
-			JdbcLoader.getInstance();
-		});
-	}
+        // Change to the root RXML view
+        ViewManager.getInstance().initView(ViewType.ROOT, null);
 
-	@Override
-	public void stop() {
-		try {
-			new Event(EventType.SHUTDOWN, this, SourceType.USER).dispatch();
-		} catch (Exception e) {
-			LOG.catching(e);
-		}
-	}
+        // Attach the view to a scene
+        Scene rootScene = new Scene(ViewType.ROOT.getViewInst());
+
+        // Attach scene to the stage
+        primaryStage.setScene(rootScene);
+        primaryStage.setTitle("Section 002 Assignment 3");
+        primaryStage.show();
+
+        // Initialize the database connector..
+        Platform.runLater(() -> {
+            JdbcLoader.getInstance();
+        });
+    }
+
+    @Override
+    public void stop() {
+        try {
+            new Event(EventType.SHUTDOWN, this, SourceType.USER).dispatch();
+        } catch (Exception e) {
+            LOG.catching(e);
+        }
+    }
 }
