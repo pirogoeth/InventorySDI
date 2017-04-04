@@ -31,6 +31,8 @@ public class InventoryMain extends Application {
 		return instance;
 	}
 
+	private Stage rootStage;
+
 	/**
 	 * Public getter for the root pane.
 	 *
@@ -39,6 +41,15 @@ public class InventoryMain extends Application {
 	public BorderPane getRootPane() {
 		return (BorderPane) ViewType.ROOT.getViewInst();
 	}
+
+	/**
+	 * Public getter for the root stage.
+     *
+     * @return Stage
+	 */
+	public Stage getRootStage() {
+	    return this.rootStage;
+    }
 
 	public static void main(String[] args) {
 		launch(args);
@@ -53,6 +64,8 @@ public class InventoryMain extends Application {
 
 		// Initialize the FXML loader
 		LOG.debug("Loading root FX view..");
+
+		this.rootStage = primaryStage;
 
 		// Change to the root RXML view
 		ViewManager.getInstance().initView(ViewType.ROOT, null);

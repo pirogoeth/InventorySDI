@@ -1,10 +1,13 @@
 package inventory.controller;
 
+import inventory.app.InventoryMain;
 import inventory.event.Event;
 import inventory.event.EventType;
 import inventory.models.Book;
 import inventory.models.Library;
 import inventory.models.LibraryBook;
+import inventory.reports.LibraryReportGenerator;
+import inventory.reports.PdfReporter;
 import inventory.sql.BookQuery;
 import inventory.sql.LibraryBookQuery;
 import inventory.view.ContentModifiable;
@@ -21,17 +24,19 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
 import javafx.util.converter.IntegerStringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
-import java.util.stream.Stream;
 
-import static inventory.event.Quick.*;
+import static inventory.event.Quick.dispatchModelReload;
+import static inventory.event.Quick.dispatchViewRefresh;
 
 public class LibraryDetail extends EventedClickHandler implements Initializable, ContentModifiable {
 
@@ -61,6 +66,7 @@ public class LibraryDetail extends EventedClickHandler implements Initializable,
     @FXML private Button detailDelete;
     @FXML private Button bookAddButton;
     @FXML private Button bookDeleteButton;
+    @FXML private Button generateReportButton;
 
     private boolean deleteDisabled = false;
     private boolean modified = false;
@@ -124,8 +130,57 @@ public class LibraryDetail extends EventedClickHandler implements Initializable,
     }
 
     @FXML
+    private void handleGenerateReport(ActionEvent evt) {
+        if ( this.isContentModified() ) {
+            Alert a = new Alert(
+                    AlertType.CONFIRMATION,
+                    "Are you sure you want to generate a report before saving?",
+                    ButtonType.YES,
+                    ButtonType.NO
+            );
+            a.showAndWait()
+                    .filter(response -> response == ButtonType.YES)
+                    .ifPresent(response -> this.performGenerateReport());
+        } else {
+            this.performGenerateReport();
+        }
+    }
+
+    private void performGenerateReport() {
+        // Make sure the model is up-to-date before generating report...
+        dispatchModelReload(this);
+
+        // Open a file chooser to do path selection
+        final FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Library Report");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PDF", "*.pdf")
+        );
+
+        File selectedFile = chooser.showSaveDialog(InventoryMain.getInstance().getRootStage());
+        if ( selectedFile == null ) {
+            LOG.warn("File selected with chooser appears to be null?");
+            return;
+        }
+
+        String path = selectedFile.getAbsolutePath();
+        PdfReporter pdfr = PdfReporter.getInstance();
+        try {
+            pdfr.writeReport(new LibraryReportGenerator(this.currentLibrary), path);
+            LOG.info(String.format("Report has been written to %s!", path));
+        } catch (Exception e) {
+            Alert a = new Alert(
+                    AlertType.ERROR,
+                    "Error occurred while writing report, check console for details.",
+                    ButtonType.OK
+            );
+            a.showAndWait();
+            return;
+        }
+    }
+
+    @FXML
     private void handleAddBook(ActionEvent evt) {
-        // stub
         Book selected = this.bookSelection.getSelectionModel().getSelectedItem();
         LibraryBook lb;
 

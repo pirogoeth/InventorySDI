@@ -219,6 +219,10 @@ public class Library implements Auditable, OptimisticLocked, Reloadable {
 	 * PROPERTY SETTERS / GETTERS
 	 */
 
+    public ObservableList<LibraryBook> getBooksList() {
+        return this.books.get();
+    }
+
     /**
      * @return int model id
      */
