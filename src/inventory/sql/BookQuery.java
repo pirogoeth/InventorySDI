@@ -9,12 +9,32 @@ import javafx.collections.ObservableList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BookQuery extends CachingConnector<Book> implements IQueryBase<Book> {
+
+    public enum SearchField {
+        TITLE("title"),
+        PUBLISHER("publisher"),
+        PUBLISH_DATE("date_published");
+
+        private String fieldName;
+        SearchField(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public String getFieldName() {
+            return this.fieldName;
+        }
+    }
+
+    public static Map<SearchField, String> newSearchMap() {
+        return new HashMap<>();
+    }
 
     /**
      * Static connector instance
@@ -189,6 +209,30 @@ public class BookQuery extends CachingConnector<Book> implements IQueryBase<Book
         }
 
         return false;
+    }
+
+    public ObservableList<Book> search(Map<SearchField, String> query) {
+        if ( this.isDirty() ) {
+            this.ensureCacheClean();
+            return this.search(query);
+        } else {
+            if ( query.isEmpty() ) {
+                return this.findAll();
+            }
+
+            String publisher = query.get(SearchField.PUBLISHER);
+            String title = query.get(SearchField.TITLE);
+            String pubDateS = query.get(SearchField.PUBLISH_DATE);
+            LocalDate pubDate = pubDateS == null ? null : LocalDate.parse(pubDateS);
+
+            ObservableList<Book> results = this.stream()
+                .filter(b -> publisher == null || ( b.getPublisher().toLowerCase().startsWith(publisher) ))
+                .filter(b -> title == null || ( b.getTitle().toLowerCase().startsWith(title) ))
+                .filter(b -> pubDate == null || ( b.getPublishDate().isAfter(pubDate) || b.getPublishDate().isEqual(pubDate) ))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+
+            return results;
+        }
     }
 
     public ObservableList<Book> findAll() {

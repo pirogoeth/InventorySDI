@@ -47,6 +47,7 @@ public class Root extends EventReceiver implements Initializable {
     @FXML private MenuItem authorsList;
     @FXML private MenuItem booksNew;
     @FXML private MenuItem booksList;
+    @FXML private MenuItem booksSearch;
     @FXML private MenuItem libraryNew;
     @FXML private MenuItem libraryList;
     @FXML private MenuItem auditLog;
@@ -176,6 +177,14 @@ public class Root extends EventReceiver implements Initializable {
             } else {
                 // Uhhhh
                 LOG.fatal("Could not initialize Book detail view");
+            }
+
+        } else if ( source == this.booksSearch ) {
+            LOG.debug("Opening search pane to query books list");
+            if ( this.viewMgr.initView(ViewType.BOOK_SEARCH) ) {
+                Parent searchView = ViewType.BOOK_SEARCH.getViewInst();
+
+                this.viewMgr.changeView(null, searchView);
             }
 
         } else if ( source == this.libraryList ) {

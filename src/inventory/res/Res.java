@@ -37,6 +37,11 @@ public final class Res {
 	public static final URL book_detailed = Res.class.getResource("book_detailed.fxml");
 
 	/**
+	 * FXML view for the book search pane. Loads into the root view.
+	 */
+	public static final URL book_search = Res.class.getResource("book_search.fxml");
+
+	/**
 	 * FXML view for the library list pane. Loads into the root view.
 	 */
 	public static final URL library_list = Res.class.getResource("library_list.fxml");

@@ -1,5 +1,6 @@
 package inventory.controller;
 
+import com.sun.javafx.collections.ObservableListWrapper;
 import inventory.event.Event;
 import inventory.event.EventType;
 import inventory.models.Book;
@@ -43,6 +44,13 @@ public class BookList extends EventedClickHandler implements Initializable {
         instance = this;
 
         this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
+    }
+
+    public BookList(ObservableListWrapper<Book> searchRes) {
+        instance = this;
+
+        this.registerToReceive(EventType.VIEW_CLOSE, EventType.VIEW_REFRESH);
+        this.booksProperty.set(searchRes);
     }
 
     protected void handleSingleClick(MouseEvent evt) throws IOException {
@@ -90,7 +98,11 @@ public class BookList extends EventedClickHandler implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Get the list of authors from the database
         this.bookList.itemsProperty().bindBidirectional(this.booksProperty);
-        this.populateBookList();
+        if ( this.booksProperty.get() != null ) {
+            LOG.debug("BookList view pre-populated with book list");
+        } else {
+            this.populateBookList();
+        }
     }
 
     private void populateBookList() {
