@@ -28,8 +28,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="lib" level="project" />
-    <orderEntry type="library" exported="" scope="PROVIDED" name="JBoss 10.2.0.Final" level="application_server_libraries" />
+    <orderEntry type="library" exported="" name="JBoss 10.2.0.Final" level="application_server_libraries" />
     <orderEntry type="library" exported="" name="ejb-3.2" level="project" />
-    <orderEntry type="library" name="Java EE 6-Java EE 6" level="project" />
+    <orderEntry type="library" exported="" name="Java EE 6-Java EE 6" level="project" />
   </component>
 </module>
