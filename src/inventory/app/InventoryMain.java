@@ -3,6 +3,8 @@ package inventory.app;
 import inventory.event.Event;
 import inventory.event.EventType;
 import inventory.event.SourceType;
+import inventory.remote.auth.Authenticator;
+import inventory.remote.auth.AuthenticatorRemote;
 import inventory.sql.JdbcLoader;
 import inventory.view.ViewManager;
 import inventory.view.ViewType;
@@ -14,8 +16,11 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 /**
- * CS 4743 Assignment 5 by Sean Johnson
+ * CS 4743 Final Project by Sean Johnson
  *
  * @author Sean Johnson <isr830@my.utsa.edu>
  */
@@ -51,6 +56,15 @@ public class InventoryMain extends Application {
         return this.rootStage;
     }
 
+    public AuthenticatorRemote getAuthenticator() {
+        try {
+            return InitialContext.doLookup("inventory_ejb/Authenticator!inventory.remote.auth.AuthenticatorRemote");
+        } catch (NamingException ex) {
+            LOG.catching(ex);
+            return null;
+        }
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -75,7 +89,7 @@ public class InventoryMain extends Application {
 
         // Attach scene to the stage
         primaryStage.setScene(rootScene);
-        primaryStage.setTitle("Section 002 Assignment 3");
+        primaryStage.setTitle("Inventory Management - Final");
         primaryStage.show();
 
         // Initialize the database connector..

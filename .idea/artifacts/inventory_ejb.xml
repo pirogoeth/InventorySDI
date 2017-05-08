@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-ejb" build-on-make="true" name="inventory-ejb">
+    <output-path>$PROJECT_DIR$/out/artifacts/inventory_ejb.jar</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="InventorySDI/ejb/EJB" />
+      <element id="module-output" name="InventorySDI" />
+      <element id="javaee-facet-resources" facet="InventorySDI/javaeeApplication/javaEEApplication" />
+      <element id="library" level="project" name="ejb-3.2" />
+      <element id="directory" name="META-INF" />
+      <element id="library" level="project" name="lib" />
+      <element id="library" level="project" name="Java EE 6-Java EE 6" />
+    </root>
+  </artifact>
+</component>
