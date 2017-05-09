@@ -50,6 +50,20 @@ public enum EventType {
     STOP_WAIT,
 
     /**
+     * EventType.SESSION_OPEN
+     *
+     * Allows to hook into session logins
+     */
+    SESSION_OPEN,
+
+    /**
+     * EventType.SESSION_CLOSE
+     *
+     * Allows to hook into session logouts
+     */
+    SESSION_CLOSE,
+
+    /**
      * EventType.SHUTDOWN
      *
      * Triggered when the application is shutting down normally.

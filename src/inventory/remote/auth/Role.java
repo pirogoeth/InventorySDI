@@ -1,6 +1,8 @@
 package inventory.remote.auth;
 
-public enum Role {
+import java.io.Serializable;
+
+public enum Role implements Serializable {
 
     ADMINISTRATOR,
     LIBRARIAN,

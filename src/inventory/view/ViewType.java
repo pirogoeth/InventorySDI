@@ -22,7 +22,8 @@ public enum ViewType {
     LIBRARY_LIST(Res.library_list, LibraryList.class),
     LIBRARY_DETAIL(Res.library_detailed, LibraryDetail.class),
     WAITING_PANE(Res.waiting_pane, WaitingPane.class),
-    AUDIT_VIEW(Res.audit_log, AuditView.class);
+    AUDIT_VIEW(Res.audit_log, AuditView.class),
+    LOGIN_VIEW(Res.login_pane, LoginPane.class);
 
     private static Logger LOG = LogManager.getLogger(ViewType.class);
     private URL resUrl;

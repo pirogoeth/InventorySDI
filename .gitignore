@@ -1,3 +1,4 @@
 *.pdf
 logs/*.log
 bin/*
+out/*

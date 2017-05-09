@@ -1,8 +1,7 @@
 package inventory.remote.auth;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import javax.ejb.Stateful;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -10,9 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User {
+public class User implements Serializable {
 
-    private static final Logger LOG = LogManager.getLogger(User.class);
     private static List<User> usersList = new ArrayList<>();
 
     /**
@@ -31,10 +29,8 @@ public class User {
             byte[] digest = md.digest();
             return String.format("%064x", new BigInteger(1, digest));
         } catch (NoSuchAlgorithmException ex) {
-            LOG.catching(ex);
             return null;
         } catch (UnsupportedEncodingException ex) {
-            LOG.catching(ex);
             return null;
         }
     }
@@ -93,6 +89,14 @@ public class User {
 
     public Role getAccessRole() {
         return this.accessRole;
+    }
+
+    public String getName() {
+        return this.userName;
+    }
+
+    public String getPwHash() {
+        return this.pwHash;
     }
 
 }

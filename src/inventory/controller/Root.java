@@ -1,12 +1,13 @@
 package inventory.controller;
 
-import inventory.event.Event;
-import inventory.event.EventReceiver;
-import inventory.event.EventType;
-import inventory.event.Quick;
+import inventory.app.InventoryMain;
+import inventory.event.*;
 import inventory.models.Author;
 import inventory.models.Book;
 import inventory.models.Library;
+import inventory.remote.auth.AuthenticatorRemote;
+import inventory.remote.auth.Session;
+import inventory.remote.auth.User;
 import inventory.util.Reflect;
 import inventory.view.ViewManager;
 import inventory.view.ViewType;
@@ -51,6 +52,9 @@ public class Root extends EventReceiver implements Initializable {
     @FXML private MenuItem libraryNew;
     @FXML private MenuItem libraryList;
     @FXML private MenuItem auditLog;
+    @FXML private MenuItem sessionOpen;
+    @FXML private MenuItem sessionClose;
+    @FXML private MenuItem sessionInfo;
 
     private ViewManager viewMgr;
 
@@ -187,6 +191,32 @@ public class Root extends EventReceiver implements Initializable {
                 this.viewMgr.changeView(null, searchView);
             }
 
+        } else if ( source == this.sessionOpen ) {
+            LOG.debug("Open login pane");
+            if (this.viewMgr.initView(ViewType.LOGIN_VIEW)) {
+                Parent loginView = ViewType.LOGIN_VIEW.getViewInst();
+
+                this.viewMgr.changeView(null, loginView);
+            }
+
+        } else if ( source == this.sessionClose ) {
+            if ( LoginPane.getSessionInfo() == null ) {
+                LOG.error("Can't close current user session - none open");
+            } else {
+                LOG.debug("Close current user session: " + LoginPane.getSessionInfo().getId());
+                AuthenticatorRemote auth = InventoryMain.getInstance().getAuthenticator();
+                boolean closeSuccess = auth.logout(LoginPane.getSessionInfo());
+                if ( closeSuccess ) {
+                    try {
+                        new Event(EventType.SESSION_CLOSE, LoginPane.getSessionInfo(), SourceType.USER).dispatch();
+                    } catch (Exception ex) {
+                        LOG.catching(ex);
+                    }
+                } else {
+                    LOG.error("Could not log out from session server - unknown error");
+                }
+            }
+
         } else if ( source == this.libraryList ) {
             // Load the books list.
             LOG.info("Loading library list");
@@ -260,6 +290,30 @@ public class Root extends EventReceiver implements Initializable {
                     LOG.catching(ex);
                 }
                 break;
+            case SESSION_OPEN:
+                try {
+                    Session s = (Session) ev.getSource();
+                    User u = s.getUser();
+                    this.sessionInfo.setText(String.format("User: %s", u.getName()));
+                    this.sessionClose.setDisable(false);
+                    this.sessionOpen.setDisable(true);
+                } catch (Exception ex) {
+                    // Nothing bad should happen here?
+                    LOG.fatal("Something bad happened while updating session info!");
+                    LOG.catching(ex);
+                }
+                break;
+            case SESSION_CLOSE:
+                try {
+                    this.sessionInfo.setText("Not Logged In");
+                    this.sessionClose.setDisable(true);
+                    this.sessionOpen.setDisable(false);
+                } catch (Exception ex) {
+                    // Nothing bad should happen here?
+                    LOG.fatal("Something bad happened while updating session info!");
+                    LOG.catching(ex);
+                }
+                break;
             default:
                 break;
         }
@@ -269,11 +323,18 @@ public class Root extends EventReceiver implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         LOG.debug("Initialize root controller");
 
-        this.registerToReceive(EventType.START_WAIT, EventType.STOP_WAIT);
+        this.registerToReceive(
+                EventType.START_WAIT,
+                EventType.STOP_WAIT,
+                EventType.SESSION_OPEN,
+                EventType.SESSION_CLOSE
+        );
 
         // Bind the `Close` disable property.
         this.windowCloseDisabled.set(true);
         this.windowClose.disableProperty().bindBidirectional(this.windowCloseDisabled);
+
+        this.sessionClose.setDisable(true);
     }
 
 }

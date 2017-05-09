@@ -46,9 +46,11 @@
                 </Menu>
             <Menu mnemonicParsing="false" text="Session">
               <items>
-                <MenuItem fx:id="sessionOpenBtn" mnemonicParsing="false" onAction="#handleMenuAction" text="Log In" />
-                  <SeparatorMenuItem fx:id="sessionCloseBtn" mnemonicParsing="false" onAction="#handleMenuAction" />
-                  <MenuItem mnemonicParsing="false" text="Log Out" />
+                <MenuItem fx:id="sessionOpen" mnemonicParsing="false" onAction="#handleMenuAction" text="Log In" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="sessionClose" mnemonicParsing="false" onAction="#handleMenuAction" text="Log Out" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="sessionInfo" disable="true" mnemonicParsing="false" text="Not Logged In" />
               </items>
             </Menu>
                 <Menu mnemonicParsing="false" text="Help">

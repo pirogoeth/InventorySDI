@@ -60,4 +60,9 @@ public final class Res {
 	 * View for audit log details
 	 */
 	public static final URL audit_log = Res.class.getResource("audit_log.fxml");
+
+	/**
+	 * View for logins.
+	 */
+	public static final URL login_pane = Res.class.getResource("login_pane.fxml");
 }

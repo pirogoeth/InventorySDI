@@ -1,16 +1,14 @@
 package inventory.remote.auth;
 
-import javax.ejb.Stateful;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Session {
+public class Session implements Serializable {
 
-    public static final long SESSION_MAX_DURATION_SECONDS = 60 * 60 * 2; // seconds/min * mins/hr * num hours
-
-    private UUID id = UUID.randomUUID();
-    private LocalDateTime creationTime = LocalDateTime.now();
-    private LocalDateTime expiryTime = this.creationTime.plusSeconds(SESSION_MAX_DURATION_SECONDS);
+    private final UUID id = UUID.randomUUID();
+    private final LocalDateTime creationTime = LocalDateTime.now();
+    private final LocalDateTime expiryTime = this.creationTime.plusSeconds(60 * 60 * 2);
 
     private User userAttachment = null;
 
@@ -24,6 +22,10 @@ public class Session {
 
     public UUID getUUID() {
         return this.id;
+    }
+
+    public User getUser() {
+        return this.userAttachment;
     }
 
     public LocalDateTime getCreationTime() {
